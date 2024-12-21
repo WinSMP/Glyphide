@@ -1,0 +1,7 @@
+name: 'ChatFormatter'
+version: '0.1.0-SNAPSHOT'
+main: 'org.winlogon.ChatFormatterPlugin'
+description: 'Simple, reasonable and conventional /tpa plugin.'
+folia-supported: true
+api-version: 1.21
+depend: [LuckPerms]
