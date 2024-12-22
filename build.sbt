@@ -1,6 +1,6 @@
 import Dependencies._
 
-val mainScalaClass = "org.winlogon.ChatFormatterPlugin"
+val mainScalaClass = "org.winlogon.ChatFormatter"
 
 ThisBuild / scalaVersion     := "3.3.4"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
