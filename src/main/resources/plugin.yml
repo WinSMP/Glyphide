@@ -1,7 +1,26 @@
 name: 'ChatFormatter'
 version: '0.1.0-SNAPSHOT'
-main: 'org.winlogon.ChatFormatterPlugin'
-description: 'Simple, reasonable and conventional /tpa plugin.'
+main: 'org.winlogon.ChatFormatter'
+description: 'Simple chat formatter plugin'
 folia-supported: true
 api-version: 1.21
-depend: [LuckPerms]
+depend: ['LuckPerms']
+permissions:
+  chatformatter.color:
+    description: 'Change the color of the message.'
+    default: op
+  chatformatter.bold:
+    description: 'Make the message bold.'
+    default: op
+  chatformatter.italic:
+    description: 'Make the message italic.'
+    default: op
+  chatformatter.underline:
+    description: 'Make the message underlined.'
+    default: op
+  chatformatter.magic:
+    description: 'Obfuscate the message.'
+    default: op
+commands:
+  chatformatter:
+    default: op
