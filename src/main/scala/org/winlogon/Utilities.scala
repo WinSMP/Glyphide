@@ -31,13 +31,13 @@ def getSuffix(player: Player): String = {
 }
 
 /**
-  * Format a message for a player, based on their permissions.
-  *
-  * @param player The player to format the message for
-  * @param message The message to format
-  * @return The formatted message
-  * @see https://minecraft.fandom.com/wiki/Formatting_codes
-  */
+ * Format a message for a player, based on their permissions.
+ *
+ * @param player The player to format the message for
+ * @param message The message to format
+ * @return The formatted message
+ * @see https://minecraft.fandom.com/wiki/Formatting_codes
+ */
 def formatMessage(player: Player, message: String): String = {
   val permissions = Map(
     "chatformatter.color" -> "(?i)&[0-9a-f]",

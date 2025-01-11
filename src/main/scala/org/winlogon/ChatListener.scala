@@ -1,13 +1,11 @@
 package org.winlogon
 
-import org.bukkit.{Bukkit, ChatColor}
+import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 import org.bukkit.event.{EventHandler, Listener}
 import org.bukkit.plugin.Plugin
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
 case class Placeholders(
   prefix: String,
@@ -18,33 +16,44 @@ case class Placeholders(
 )
 
 class ChatListener(plugin: Plugin) extends Listener {
+
+  // Adventure Legacy Component Serializer with hex color support
+  private val legacySerializer: LegacyComponentSerializer = LegacyComponentSerializer.builder()
+    .character('&') // Use '&' as the color code character
+    .hexColors()    // Enable hex color support
+    .build()
+
+
   @EventHandler
   def onPlayerChat(event: AsyncChatEvent): Unit = {
     val player: Player = event.getPlayer
-    // Extract the plain text of the message using PlainTextComponentSerializer
-    val message = PlainTextComponentSerializer.plainText().serialize(event.message())
+    val rawMessage = event.message() // Get the raw message as a Component
+    val plainMessage = Component.text().content(rawMessage).build() // Convert to plain text
+
 
     val replacements = Placeholders(
       prefix = getPrefix(player),
       suffix = getSuffix(player),
-      username = player.getName, // Added the missing username argument
+      username = player.getName,
       world = player.getWorld.getName,
-      message = formatMessage(player, message)
+      message = formatMessage(player, plainMessage)
     )
 
     // Retrieve chat format from config
-    var chatFormat = plugin.getConfig.getString("chat.format", "&7$prefix$username$suffix&7 » &f$message")
-    // Translate placeholders
-    chatFormat = chatFormat
-      .replace("$prefix", replacements.prefix)
-      .replace("$suffix", replacements.suffix)
-      .replace("$username", player.getName)
-      .replace("$message", replacements.message)
-      .replace("$world", replacements.world)
+    val chatFormat = plugin.getConfig.getString("chat.format", "&7$prefix$username$suffix&7 » &f$message")
 
-    val msg = ChatColor.translateAlternateColorCodes('&', chatFormat)
-    // Use Adventure API to create a Component for the renderer
-    val chatComponent = Component.text(msg).color(NamedTextColor.WHITE)
-    event.renderer((_, _, _, _) => chatComponent)
+    // Replace placeholders in the format
+    val formattedMessage = chatFormat
+      .replace("$prefix", getPrefix(player))
+      .replace("$suffix", getSuffix(player))
+      .replace("$username", player.getName)
+      .replace("$message", formatMessage(player, plainMessage))
+
+    // Deserialize the formatted string into a Component with color support
+    val chatComponent: Component = legacySerializer.deserialize(formattedMessage)
+
+    // Set the formatted Component as the event message
+    event.message(chatComponent)
   }
 }
+
