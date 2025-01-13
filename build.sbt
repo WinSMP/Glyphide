@@ -32,8 +32,7 @@ assembly / mainClass := Some(mainScalaClass)
 libraryDependencies ++= Seq(
   "io.papermc.paper" % "paper-api" % "1.21.4-R0.1-SNAPSHOT" % Provided,
   "net.luckperms" % "api" % "5.4" % Provided,
-  "net.kyori" % "adventure-text-minimessage" % "4.18.0",
-  "org.fusesource.jansi" % "jansi" % "2.4.1"
+  "net.kyori" % "adventure-text-minimessage" % "4.18.0" % Provided,
 )
 
 resolvers ++= Seq(

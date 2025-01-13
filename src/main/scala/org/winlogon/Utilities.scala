@@ -23,17 +23,23 @@ val tagsResolver = TagResolver.builder()
   .resolver(StandardTags.transition())
   .build()
 
+val basicTagsResolver = TagResolver.builder()
+  .resolver(StandardTags.color())
+  .resolver(StandardTags.decorations())
+  .resolver(StandardTags.gradient())
+  .build()
+
 /**
   * Get the prefix of a player.
   *
   * @param player The player to get the prefix of
   * @return The player's prefix
   */
-def getPrefix(player: Player): String = {
+def getPrefix(player: Player): Component = {
   Option(LuckPermsProvider.get().getUserManager.getUser(player.getUniqueId))
     .flatMap(user => Option(user.getCachedData.getMetaData.getPrefix))
-    .map(prefix => toMiniMessage(prefix))
-    .getOrElse("")
+    .map(prefix => MiniMessage.miniMessage().deserialize(convertLegacyToMiniMessage(prefix), basicTagsResolver))
+    .getOrElse(Component.empty())
 }
 
 /**
@@ -41,11 +47,11 @@ def getPrefix(player: Player): String = {
   * @param player The player to get the suffix of
   * @return The player's suffix
   */
-def getSuffix(player: Player): String = {
+def getSuffix(player: Player): Component = {
   Option(LuckPermsProvider.get().getUserManager.getUser(player.getUniqueId))
     .flatMap(user => Option(user.getCachedData.getMetaData.getSuffix))
-    .map(suffix => toMiniMessage(suffix))
-    .getOrElse("")
+    .map(suffix => MiniMessage.miniMessage().deserialize(convertLegacyToMiniMessage(suffix), basicTagsResolver))
+    .getOrElse(Component.empty())
 }
 
 /**
@@ -58,14 +64,19 @@ def getSuffix(player: Player): String = {
   */
 def formatMessage(player: Player, message: String): Component = {
   if (player.hasPermission("chatformatter.admin")) {
+    // TODO: find better way to not escape MiniMessages
+    val convertedString = convertLegacyToMiniMessage(message)
+      .replaceAll("\\\\>", ">")
+      .replaceAll("\\\\<", "<")
     val mm: MiniMessage = MiniMessage.builder().tags(tagsResolver).build()
 
     Try {
-      mm.deserialize(message, tagsResolver)
+      mm.deserialize(convertedString, tagsResolver)
     } match {
-      case Success(parsedComponent) => parsedComponent
+      case Success(parsedComponent) =>
+        parsedComponent
       case Failure(e) =>
-        LegacyComponentSerializer.legacyAmpersand().deserialize(message)
+        LegacyComponentSerializer.legacyAmpersand().deserialize(convertedString)
     }
   } else {
     LegacyComponentSerializer.legacyAmpersand().deserialize(
@@ -76,9 +87,16 @@ def formatMessage(player: Player, message: String): Component = {
   }
 }
 
+/**
+  * Converts a string with legacy ampersands to MiniMessage-formatted messages.
+  *
+  * @param input The legacy-formatted string
+  * @return The MiniMessage-formatted message
+  * @see https://docs.papermc.io/paper/dev/component-api/introduction#legacycomponentserializer
+   */
 def convertLegacyToMiniMessage(input: String): String = {
-  val component = LegacyComponentSerializer.legacyAmpersand().deserialize(input)
-  MiniMessage.miniMessage().serialize(component)
+  val s = ChatColor.translateAlternateColorCodes('&', input)
+  MiniMessage.miniMessage().serialize(
+    LegacyComponentSerializer.legacySection().deserialize(s)
+  )
 }
-
-def toMiniMessage(s: String): String = convertLegacyToMiniMessage(s)

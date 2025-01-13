@@ -1,10 +1,9 @@
 package org.winlogon
 
-import org.bukkit.Bukkit
+import org.bukkit.{Bukkit, ChatColor}
 import org.bukkit.entity.Player
 import org.bukkit.event.{EventHandler, Listener, EventPriority}
 import org.bukkit.plugin.Plugin
-import org.fusesource.jansi.{Ansi, AnsiConsole}
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
@@ -18,10 +17,9 @@ import io.papermc.paper.event.player.AsyncChatEvent
 import scala.util.matching.Regex
 
 case class Placeholders(
-  prefix: String,
-  suffix: String,
+  prefix: Component,
+  suffix: Component,
   username: String,
-  message: String,
   world: String
 )
 
@@ -31,34 +29,34 @@ class ChatListener(plugin: Plugin) extends Listener {
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   def onPlayerChat(event: AsyncChatEvent): Unit = {
     val player: Player = event.getPlayer
+    // is this ok
     val message = PlainTextComponentSerializer.plainText().serialize(event.message())
   
     val replacements = Placeholders(
       prefix = getPrefix(player),
       suffix = getSuffix(player),
       username = player.getName,
-      world = player.getWorld.getName,
-      // Placeholder, will be replaced with Component
-      message = "",
+      world = player.getWorld.getName
     )
   
-    val chatFormatRaw = plugin.getConfig.getString("chat.format", "$prefix $username &7» &f$message")
-    val chatFormat = chatFormatRaw
-      .replace("$prefix", replacements.prefix)
-      .replace("$suffix", replacements.suffix)
+    val rawChatFormat = plugin.getConfig.getString("chat.format", "$prefix $username > $message")
       .replace("$username", replacements.username)
       .replace("$world", replacements.world)
-      .replace("$message", replacements.message)
+  
+    // player.sendMessage(s"chat formatting: \"$rawChatFormat\"")
+  
 
-      val chatFormatMini = convertLegacyToMiniMessage(chatFormat)
-      val formattedMessageComponent = formatMessage(player, message)
-
-      val finalComponent = MiniMessage.miniMessage().deserialize(chatFormatMini, tagsResolver)
-        .replaceText(builder => builder.matchLiteral("$message").replacement(formattedMessageComponent))
-
-      val component = miniMessage.deserialize(finalComponent, tagsResolver)
-
-      Bukkit.getConsoleSender.sendMessage(finalComponent)
-      event.message()
+    val chatFormat = convertLegacyToMiniMessage(
+      ChatColor.translateAlternateColorCodes('&', rawChatFormat)
+    )
+    val formattedMessageComponent = formatMessage(player, message)
+  
+    val component: Component = miniMessage.deserialize(chatFormat, tagsResolver)
+      .replaceText(builder => builder.matchLiteral("$prefix").replacement(replacements.prefix))
+      .replaceText(builder => builder.matchLiteral("$suffix").replacement(replacements.suffix))
+      .replaceText(builder => builder.matchLiteral("$message").replacement(formattedMessageComponent))
+   
+    // Set the chat renderer to override the default message
+    event.renderer((source, _, _, _) => component)
   }
 }
