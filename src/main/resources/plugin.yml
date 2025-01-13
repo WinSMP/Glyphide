@@ -18,8 +18,8 @@ permissions:
   chatformatter.underline:
     description: 'Make the message underlined.'
     default: op
-  chatformatter.magic:
-    description: 'Obfuscate the message.'
+  chatformatter.admin:
+    description: 'admin perms'
     default: op
 commands:
   chatformatter:

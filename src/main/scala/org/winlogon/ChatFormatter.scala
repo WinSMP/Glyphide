@@ -5,7 +5,6 @@ import org.bukkit.command.{Command, CommandExecutor, CommandSender}
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChatFormatter extends JavaPlugin {
-
   override def onEnable(): Unit = {
     val pluginManager = Bukkit.getServer.getPluginManager()
 

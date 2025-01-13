@@ -1,9 +1,27 @@
 package org.winlogon
 
-import org.bukkit.entity.Player
 import org.bukkit.ChatColor
+import org.bukkit.entity.Player
+
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.luckperms.api.{LuckPerms, LuckPermsProvider}
 import net.luckperms.api.model.user.User
+
+import scala.util.{Try, Success, Failure}
+
+val tagsResolver = TagResolver.builder()
+  .resolver(StandardTags.color())
+  .resolver(StandardTags.decorations())
+  .resolver(StandardTags.gradient())
+  .resolver(StandardTags.rainbow())
+  .resolver(StandardTags.clickEvent())
+  .resolver(StandardTags.hoverEvent())
+  .resolver(StandardTags.transition())
+  .build()
 
 /**
   * Get the prefix of a player.
@@ -14,7 +32,7 @@ import net.luckperms.api.model.user.User
 def getPrefix(player: Player): String = {
   Option(LuckPermsProvider.get().getUserManager.getUser(player.getUniqueId))
     .flatMap(user => Option(user.getCachedData.getMetaData.getPrefix))
-    .map(prefix => ChatColor.translateAlternateColorCodes('&', prefix))
+    .map(prefix => toMiniMessage(prefix))
     .getOrElse("")
 }
 
@@ -26,7 +44,7 @@ def getPrefix(player: Player): String = {
 def getSuffix(player: Player): String = {
   Option(LuckPermsProvider.get().getUserManager.getUser(player.getUniqueId))
     .flatMap(user => Option(user.getCachedData.getMetaData.getSuffix))
-    .map(suffix => ChatColor.translateAlternateColorCodes('&', suffix))
+    .map(suffix => toMiniMessage(suffix))
     .getOrElse("")
 }
 
@@ -38,17 +56,29 @@ def getSuffix(player: Player): String = {
   * @return The formatted message
   * @see https://minecraft.fandom.com/wiki/Formatting_codes
   */
-def formatMessage(player: Player, message: String): String = {
-  val permissions = Map(
-    "chatformatter.color" -> "(?i)&[0-9a-f]",
-    "chatformatter.bold" -> "(?i)&l",
-    "chatformatter.italic" -> "(?i)&o",
-    "chatformatter.underline" -> "(?i)&n",
-    "chatformatter.magic" -> "(?i)&k"
-  )
+def formatMessage(player: Player, message: String): Component = {
+  if (player.hasPermission("chatformatter.admin")) {
+    val mm: MiniMessage = MiniMessage.builder().tags(tagsResolver).build()
 
-  permissions.foldLeft(ChatColor.translateAlternateColorCodes('&', message)) {
-    case (msg, (perm, regex)) =>
-      if (!player.hasPermission(perm)) msg.replaceAll(regex, "") else msg
+    Try {
+      mm.deserialize(message, tagsResolver)
+    } match {
+      case Success(parsedComponent) => parsedComponent
+      case Failure(e) =>
+        LegacyComponentSerializer.legacyAmpersand().deserialize(message)
+    }
+  } else {
+    LegacyComponentSerializer.legacyAmpersand().deserialize(
+      message
+        .replaceAll("(?i)&k", "")
+        .replaceAll("(?i)&([0-9a-f])", "&$1")
+    )
   }
 }
+
+def convertLegacyToMiniMessage(input: String): String = {
+  val component = LegacyComponentSerializer.legacyAmpersand().deserialize(input)
+  MiniMessage.miniMessage().serialize(component)
+}
+
+def toMiniMessage(s: String): String = convertLegacyToMiniMessage(s)
