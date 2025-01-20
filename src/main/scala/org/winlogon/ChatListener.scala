@@ -1,59 +1,59 @@
 package org.winlogon
 
-import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.bukkit.{Bukkit, ChatColor}
 import org.bukkit.entity.Player
-import org.bukkit.event.{EventHandler, Listener}
+import org.bukkit.event.{EventHandler, Listener, EventPriority}
 import org.bukkit.plugin.Plugin
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+
+import io.papermc.paper.event.player.AsyncChatEvent
+
+import scala.util.matching.Regex
+
 case class Placeholders(
-  prefix: String,
-  suffix: String,
+  prefix: Component,
+  suffix: Component,
   username: String,
-  message: String,
   world: String
 )
 
 class ChatListener(plugin: Plugin) extends Listener {
+  val miniMessage = MiniMessage.miniMessage()
 
-  // Adventure Legacy Component Serializer with hex color support
-  private val legacySerializer: LegacyComponentSerializer = LegacyComponentSerializer.builder()
-    .character('&') // Use '&' as the color code character
-    .hexColors()    // Enable hex color support
-    .build()
-
-
-  @EventHandler
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   def onPlayerChat(event: AsyncChatEvent): Unit = {
     val player: Player = event.getPlayer
-    val rawMessage = event.message() // Get the raw message as a Component
-    val plainMessage = Component.text().content(rawMessage).build() // Convert to plain text
-
-
+    val message = PlainTextComponentSerializer.plainText().serialize(event.message())
+  
     val replacements = Placeholders(
       prefix = getPrefix(player),
       suffix = getSuffix(player),
       username = player.getName,
-      world = player.getWorld.getName,
-      message = formatMessage(player, plainMessage)
+      world = player.getWorld.getName
     )
+  
+    val rawChatFormat = plugin.getConfig.getString("chat.format", "$prefix $username > $message")
+      .replace("$username", replacements.username)
+      .replace("$world", replacements.world)
+  
 
-    // Retrieve chat format from config
-    val chatFormat = plugin.getConfig.getString("chat.format", "&7$prefix$username$suffix&7 » &f$message")
-
-    // Replace placeholders in the format
-    val formattedMessage = chatFormat
-      .replace("$prefix", getPrefix(player))
-      .replace("$suffix", getSuffix(player))
-      .replace("$username", player.getName)
-      .replace("$message", formatMessage(player, plainMessage))
-
-    // Deserialize the formatted string into a Component with color support
-    val chatComponent: Component = legacySerializer.deserialize(formattedMessage)
-
-    // Set the formatted Component as the event message
-    event.message(chatComponent)
+    val chatFormat = convertLegacyToMiniMessage(
+      ChatColor.translateAlternateColorCodes('&', rawChatFormat)
+    )
+    val formattedMessageComponent = formatMessage(player, message)
+  
+    val component: Component = miniMessage.deserialize(chatFormat, tagsResolver)
+      .replaceText(builder => builder.matchLiteral("$prefix").replacement(replacements.prefix))
+      .replaceText(builder => builder.matchLiteral("$suffix").replacement(replacements.suffix))
+      .replaceText(builder => builder.matchLiteral("$message").replacement(formattedMessageComponent))
+   
+    // Set the chat renderer to override the default message
+    event.renderer((source, _, _, _) => component)
   }
 }
-

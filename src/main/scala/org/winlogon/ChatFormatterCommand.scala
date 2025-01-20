@@ -10,14 +10,13 @@ class ChatFormatterCommand(plugin: ChatFormatter) extends CommandExecutor {
       label: String,
       args: Array[String]
   ): Boolean = {
-    // TODO: change colors to match other plugins' theme
     if (args.isEmpty || !args(0).equalsIgnoreCase("reload")) {
-      sender.sendMessage(s"${ChatColor.RED}Usage: /chatformatter reload")
+      sender.sendMessage(s"§cUsage§7: /chatformatter §2reload")
       return true
     }
 
     plugin.reloadConfig()
-    sender.sendMessage(s"${ChatColor.GREEN}ChatFormatter configuration reloaded.")
+    sender.sendMessage(s"§7ChatFormatter configuration §3reloaded§7.")
     true
   }
 }
