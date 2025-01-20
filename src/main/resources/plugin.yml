@@ -6,21 +6,10 @@ folia-supported: true
 api-version: 1.21
 depend: ['LuckPerms']
 permissions:
-  chatformatter.color:
-    description: 'Change the color of the message.'
-    default: op
-  chatformatter.bold:
-    description: 'Make the message bold.'
-    default: op
-  chatformatter.italic:
-    description: 'Make the message italic.'
-    default: op
-  chatformatter.underline:
-    description: 'Make the message underlined.'
-    default: op
   chatformatter.admin:
     description: 'admin perms'
     default: op
 commands:
   chatformatter:
     default: op
+    aliases: ['cf', 'formatter']

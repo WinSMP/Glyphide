@@ -5,6 +5,8 @@ import org.bukkit.command.{Command, CommandExecutor, CommandSender}
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChatFormatter extends JavaPlugin {
+  val commands = ("chatformatter", "cf", "formatter").toList
+
   override def onEnable(): Unit = {
     val pluginManager = Bukkit.getServer.getPluginManager()
 
@@ -17,11 +19,14 @@ class ChatFormatter extends JavaPlugin {
 
     saveDefaultConfig()
     pluginManager.registerEvents(new ChatListener(this), this)
-    getCommand("chatformatter").setExecutor(new ChatFormatterCommand(this))
-    getLogger.info("ChatFormatterPlugin has been enabled!")
+
+    for (command <- commands) {
+      getCommand(command).setExecutor(new ChatFormatterCommand(this))
+    }
+    getLogger.info("ChatFormatter has been enabled!")
   }
 
   override def onDisable(): Unit = {
-    getLogger.info("ChatFormatterPlugin has been disabled!")
+    getLogger.info("ChatFormatter has been disabled!")
   }
 }
