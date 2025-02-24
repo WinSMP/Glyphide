@@ -1,0 +1,20 @@
+name: 'ChatFormatter'
+version: '0.1.0-SNAPSHOT'
+main: 'org.winlogon.chatformatter.ChatFormatter'
+description: 'Simple chat formatter plugin'
+folia-supported: true
+api-version: 1.21
+permissions:
+  chatformatter.admin:
+    description: 'Ability to reload the configuration, and use MiniMessage formatting'
+    default: op
+dependencies:
+  server:
+    CommandAPI:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    LuckPerms:
+      load: BEFORE
+      required: true
+      join-classpath: true

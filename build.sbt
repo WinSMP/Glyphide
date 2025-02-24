@@ -1,6 +1,6 @@
 import Dependencies._
 
-val mainScalaClass = "org.winlogon.ChatFormatter"
+lazy val mainScalaClass = "org.winlogon.chatformatter.ChatFormatter"
 
 ThisBuild / scalaVersion     := "3.3.4"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
@@ -9,7 +9,7 @@ ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
 
 // GitHub CI
-ThisBuild / githubWorkflowJavaVersions += JavaSpec.temurin("21")
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
 ThisBuild / publishTo := None
 publish / skip := true
 
@@ -17,7 +17,7 @@ crossScalaVersions := Seq("3.3.4")
 
 lazy val root = (project in file("."))
   .settings(
-    name := "chat-formatter-plugin",
+    name := "ChatFormatter",
     libraryDependencies += munit % Test
   )
 
@@ -33,9 +33,10 @@ libraryDependencies ++= Seq(
   "io.papermc.paper" % "paper-api" % "1.21.4-R0.1-SNAPSHOT" % Provided,
   "net.luckperms" % "api" % "5.4" % Provided,
   "net.kyori" % "adventure-text-minimessage" % "4.18.0" % Provided,
+  "dev.jorel" % "commandapi-bukkit-core" % "9.7.0" % Provided,
 )
 
 resolvers ++= Seq(
-  "papermc-repo" at "https://repo.papermc.io/repository/maven-public/"
+  "papermc-repo" at "https://repo.papermc.io/repository/maven-public/",
+  "codemc" at "https://repo.codemc.org/repository/maven-public/",
 )
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.

@@ -1,4 +1,4 @@
-package org.winlogon
+package org.winlogon.chatformatter
 
 import org.bukkit.{Bukkit, ChatColor}
 import org.bukkit.entity.Player
