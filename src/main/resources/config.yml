@@ -1,10 +1,10 @@
-# Configuration file for ChatListener
+# ChatFormatter Configuration
 
-# Chat format configuration
-# Possible placeholders:
+# The chat format using placeholders and color codes
+# Placeholders: $prefix, $username, $suffix, $world, $message
+# Colors:
+# - & codes (e.g., &a for green, &7 for gray)
+# - MiniMessage: Use <#hexcolor>, <gradient>, etc. (requires specific permissions)
+
 chat:
-  format: "<$prefix$username$suffix> $message"
-
-# Prefixes and suffixes for players (example)
-prefixes:
-  default:
+  format: "&8[$world] $prefix&r &7| &b$username&r &8➤ &7$message"
