@@ -1,8 +1,10 @@
 import Dependencies._
 
-lazy val mainScalaClass = "org.winlogon.chatformatter.ChatFormatter"
+lazy val projectName = "ChatFormatter"
+lazy val mainScalaClass = s"org.winlogon.chatformatter.$projectName"
+lazy val buildScalaVersion = "3.3.5"
 
-ThisBuild / scalaVersion     := "3.3.4"
+ThisBuild / scalaVersion     := buildScalaVersion
 ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "org.winlogon"
 ThisBuild / organizationName := "winlogon"
@@ -13,11 +15,11 @@ ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
 ThisBuild / publishTo := None
 publish / skip := true
 
-crossScalaVersions := Seq("3.3.4")
+crossScalaVersions := Seq(buildScalaVersion)
 
 lazy val root = (project in file("."))
   .settings(
-    name := "ChatFormatter",
+    name := projectName,
     libraryDependencies += munit % Test
   )
 
@@ -32,8 +34,8 @@ assembly / mainClass := Some(mainScalaClass)
 libraryDependencies ++= Seq(
   "io.papermc.paper" % "paper-api" % "1.21.4-R0.1-SNAPSHOT" % Provided,
   "net.luckperms" % "api" % "5.4" % Provided,
-  "net.kyori" % "adventure-text-minimessage" % "4.18.0" % Provided,
   "dev.jorel" % "commandapi-bukkit-core" % "9.7.0" % Provided,
+  "net.kyori" % "adventure-text-minimessage" % "4.18.0" % Provided,
 )
 
 resolvers ++= Seq(
