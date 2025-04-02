@@ -1,4 +1,5 @@
 import Dependencies._
+import sbtassembly.AssemblyPlugin.defaultShellScript
 
 lazy val projectName = "ChatFormatter"
 lazy val mainScalaClass = s"org.winlogon.chatformatter.$projectName"
@@ -20,7 +21,7 @@ crossScalaVersions := Seq(buildScalaVersion)
 lazy val root = (project in file("."))
   .settings(
     name := projectName,
-    libraryDependencies += munit % Test
+    assembly / assemblyOption := (assembly / assemblyOption).value.withIncludeScala(false),
   )
 
 // Merge strategy for avoiding conflicts in dependencies
