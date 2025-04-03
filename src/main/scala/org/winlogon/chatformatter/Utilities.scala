@@ -8,12 +8,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.luckperms.api.{LuckPerms, LuckPermsProvider}
 import net.luckperms.api.model.user.User
+import net.luckperms.api.{LuckPerms, LuckPermsProvider}
 
 import scala.util.{Try, Success, Failure}
 
-val tagsResolver = TagResolver.builder()
+val advancedTagsResolver = TagResolver.builder()
   .resolver(StandardTags.color())
   .resolver(StandardTags.decorations())
   .resolver(StandardTags.gradient())
@@ -68,10 +68,10 @@ def formatMessage(player: Player, message: String): Component = {
     val convertedString = convertLegacyToMiniMessage(message)
       .replaceAll("\\\\>", ">")
       .replaceAll("\\\\<", "<")
-    val mm: MiniMessage = MiniMessage.builder().tags(tagsResolver).build()
+    val mm: MiniMessage = MiniMessage.builder().tags(advancedTagsResolver).build()
 
     Try {
-      mm.deserialize(convertedString, tagsResolver)
+      mm.deserialize(convertedString, advancedTagsResolver)
     } match {
       case Success(parsedComponent) =>
         parsedComponent
