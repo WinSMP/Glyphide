@@ -48,7 +48,7 @@ class ChatListener(plugin: Plugin) extends Listener {
     )
     val formattedMessageComponent = formatMessage(player, message)
   
-    val component: Component = miniMessage.deserialize(chatFormat, tagsResolver)
+    val component: Component = miniMessage.deserialize(chatFormat, advancedTagsResolver)
       .replaceText(builder => builder.matchLiteral("$prefix").replacement(replacements.prefix))
       .replaceText(builder => builder.matchLiteral("$suffix").replacement(replacements.suffix))
       .replaceText(builder => builder.matchLiteral("$message").replacement(formattedMessageComponent))
