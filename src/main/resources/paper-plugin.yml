@@ -1,5 +1,5 @@
 name: 'ChatFormatter'
-version: '0.1.0-SNAPSHOT'
+version: '0.2.0-SNAPSHOT'
 main: 'org.winlogon.chatformatter.ChatFormatter'
 description: 'Simple chat formatter plugin'
 folia-supported: true
