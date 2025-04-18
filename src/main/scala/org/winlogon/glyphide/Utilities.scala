@@ -1,4 +1,4 @@
-package org.winlogon.chatformatter
+package org.winlogon.glyphide
 
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -70,7 +70,7 @@ def getSuffix(player: Player): Component = {
   * @see https://minecraft.fandom.com/wiki/Formatting_codes
   */
 def formatMessage(player: Player, message: String): Component = {
-    if (player.hasPermission("chatformatter.admin")) {
+    if (player.hasPermission("glyphide.admin")) {
         // TODO: find better way to escape MiniMessages
         val convertedString = convertLegacyToMiniMessage(message)
             .replaceAll("\\\\>", ">")

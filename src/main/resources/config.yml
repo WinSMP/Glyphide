@@ -1,4 +1,4 @@
-# ChatFormatter Configuration
+# Glyphide configuration
 
 # The chat format using placeholders and color codes
 # Placeholders: $prefix, $username, $suffix, $world, $message

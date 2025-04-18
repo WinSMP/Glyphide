@@ -1,9 +1,9 @@
 import Dependencies._
 import sbtassembly.AssemblyPlugin.defaultShellScript
 
-lazy val projectName = "ChatFormatter"
+lazy val projectName = "Glyphide"
 lazy val orgName = "org.winlogon"
-lazy val mainScalaClass = s"$orgName.chatformatter.$projectName"
+lazy val mainScalaClass = s"$orgName.glyphide.$projectName"
 lazy val buildScalaVersion = "3.3.5"
 
 ThisBuild / scalaVersion     := buildScalaVersion

@@ -1,11 +1,11 @@
-name: 'ChatFormatter'
+name: 'Glyphide'
 version: '0.2.0-SNAPSHOT'
-main: 'org.winlogon.chatformatter.ChatFormatter'
-description: 'Simple chat formatter plugin'
+main: 'org.winlogon.glyphide.GlyphideFormatter'
+description: 'A highly‑customizable chat‑formatting plugin for Paper Minecraft servers, powered by MiniMessage and placeholders for dynamic, colorful in‑game chat.'
 folia-supported: true
 api-version: 1.21
 permissions:
-  chatformatter.admin:
+  glyphide.admin:
     description: 'Ability to reload the configuration, and use MiniMessage formatting'
     default: op
 dependencies:
