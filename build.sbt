@@ -7,7 +7,7 @@ lazy val mainScalaClass = s"$orgName.chatformatter.$projectName"
 lazy val buildScalaVersion = "3.3.5"
 
 ThisBuild / scalaVersion     := buildScalaVersion
-ThisBuild / version          := "0.1.0-SNAPSHOT"
+ThisBuild / version          := "0.2.0-SNAPSHOT"
 ThisBuild / organization     := orgName
 ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
