@@ -8,3 +8,7 @@
 
 chat:
   format: "&8[$world] $prefix&r &7| &b$username&r &8➤ &7$message"
+  item-placeholder:
+    enabled: false
+    token: "[item]"
+    hover: false

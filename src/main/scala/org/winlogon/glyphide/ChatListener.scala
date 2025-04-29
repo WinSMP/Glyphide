@@ -4,7 +4,9 @@ package org.winlogon.glyphide
 import org.bukkit.{Bukkit, ChatColor}
 import org.bukkit.entity.Player
 import org.bukkit.event.{EventHandler, Listener, EventPriority}
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
+import org.bukkit.Material
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
@@ -17,11 +19,21 @@ import Formatter.{given, *}
 
 class ChatListener(plugin: Plugin) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
+    private val hoverConfigPrefix = "chat.item-placeholder"
+    private var isItemPlaceholderEnabled: Boolean = false
+    private var itemToken: String = "[item]"
+    private var shouldUseHover: Boolean = false
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     def onPlayerChat(event: AsyncChatEvent): Unit = {
         val player = event.getPlayer
         val message = PlainTextComponentSerializer.plainText().serialize(event.message())
+
+        val config = plugin.getConfig()
+
+        isItemPlaceholderEnabled = config.getBoolean("chat.item-placeholder.enabled", false)
+        itemToken = config.getString(s"$hoverConfigPrefix.token", "[item]")
+        shouldUseHover = config.getBoolean(s"$hoverConfigPrefix.hover", false)
 
         given TagResolver = Formatter.basicResolver
 
@@ -37,16 +49,43 @@ class ChatListener(plugin: Plugin) extends Listener {
             .replace("$username", replacements.username)
             .replace("$world", replacements.world)
 
+        // format message based on permissions
+        val msg = formatMessage(player, message)
+
+        val heldOpt: Option[ItemStack] =
+            Option(player.getInventory.getItemInMainHand)
+                .filter(item => item != null && item.getType != Material.AIR)
+                .filter(_ => isItemPlaceholderEnabled)
+
+        val finalMsgComp: Component = heldOpt match {
+            case Some(item) =>
+                // get its display name (Component) and its hover event
+                val nameComp = item.displayName()
+                val hoverEvent = item.asHoverEvent()
+
+                // replace any literal placeholder in the message
+                msg.replaceText { builder =>
+                    builder
+                    .matchLiteral(itemToken)
+                    .replacement(
+                        nameComp.hoverEvent(hoverEvent)
+                    )
+                    .build()
+                }
+            case None =>
+                // air or no item: leave the message alone
+                msg
+        }
+
         val chatFormat = convertLegacyToMiniMessage(
             ChatColor.translateAlternateColorCodes('&', rawChatFormat)
         )
-        val formattedMessageComponent = formatMessage(player, message)
 
         val component = miniMessage
             .deserialize(chatFormat, summon[TagResolver])
             .replaceText(builder => builder.matchLiteral("$prefix").replacement(replacements.prefix))
             .replaceText(builder => builder.matchLiteral("$suffix").replacement(replacements.suffix))
-            .replaceText(builder => builder.matchLiteral("$message").replacement(formattedMessageComponent))
+            .replaceText(builder => builder.matchLiteral("$message").replacement(finalMsgComp))
 
         event.renderer((source, _, _, _) => component)
     }
