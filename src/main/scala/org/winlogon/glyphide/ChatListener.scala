@@ -9,6 +9,9 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.Material
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextReplacementConfig
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -17,6 +20,8 @@ import io.papermc.paper.event.player.AsyncChatEvent
 
 import Formatter.{given, *}
 
+import java.util.regex.Pattern
+
 class ChatListener(plugin: Plugin) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
     private val hoverConfigPrefix = "chat.item-placeholder"
@@ -24,9 +29,17 @@ class ChatListener(plugin: Plugin) extends Listener {
     private var itemToken: String = "[item]"
     private var shouldUseHover: Boolean = false
 
+    private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
+
     private def highlightUrl(message: Component): Component = {
-        // TODO: highlight URLs to blue (#4430cc or )
-        Component.empty()
+        message.replaceText { config =>
+            config.match(URL_PATTERN)
+            config.replacement((mr, _) => 
+                Component.text(mr.group())
+                    .color(TextColor.fromHexString("#4430cc"))
+                    .clickEvent(ClickEvent.openUrl(mr.group()))
+            )
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -82,6 +95,8 @@ class ChatListener(plugin: Plugin) extends Listener {
                 msg
         }
 
+        val highlightedMsg = highlightUrl(finalMsgComp)
+
         val chatFormat = convertLegacyToMiniMessage(
             ChatColor.translateAlternateColorCodes('&', rawChatFormat)
         )
@@ -90,7 +105,7 @@ class ChatListener(plugin: Plugin) extends Listener {
             .deserialize(chatFormat, summon[TagResolver])
             .replaceText(builder => builder.matchLiteral("$prefix").replacement(replacements.prefix))
             .replaceText(builder => builder.matchLiteral("$suffix").replacement(replacements.suffix))
-            .replaceText(builder => builder.matchLiteral("$message").replacement(finalMsgComp))
+            .replaceText(builder => builder.matchLiteral("$message").replacement(highlightedMsg))
 
         event.renderer((source, _, _, _) => component)
     }
