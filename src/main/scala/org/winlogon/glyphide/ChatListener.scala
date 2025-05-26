@@ -24,6 +24,11 @@ class ChatListener(plugin: Plugin) extends Listener {
     private var itemToken: String = "[item]"
     private var shouldUseHover: Boolean = false
 
+    private def highlightUrl(message: Component): Component = {
+        // TODO: highlight URLs to blue (#4430cc or )
+        Component.empty()
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     def onPlayerChat(event: AsyncChatEvent): Unit = {
         val player = event.getPlayer
@@ -31,7 +36,7 @@ class ChatListener(plugin: Plugin) extends Listener {
 
         val config = plugin.getConfig()
 
-        isItemPlaceholderEnabled = config.getBoolean("chat.item-placeholder.enabled", false)
+        isItemPlaceholderEnabled = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
         itemToken = config.getString(s"$hoverConfigPrefix.token", "[item]")
         shouldUseHover = config.getBoolean(s"$hoverConfigPrefix.hover", false)
 
