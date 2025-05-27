@@ -33,14 +33,13 @@ class ChatListener(plugin: Plugin) extends Listener {
 
     private def highlightUrl(message: Component): Component = {
         message.replaceText { config =>
-            config.builder()
-                .match(URL_PATTERN)
+            config
+                .`match`(URL_PATTERN)
                 .replacement((mr, _) => 
                     Component.text(mr.group())
                         .color(TextColor.fromHexString("#4430cc"))
                         .clickEvent(ClickEvent.openUrl(mr.group()))
                 )
-                .build()
         }
     }
 
