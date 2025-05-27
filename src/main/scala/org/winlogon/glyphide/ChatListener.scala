@@ -32,12 +32,15 @@ class ChatListener(plugin: Plugin) extends Listener {
     private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
 
     private def highlightUrl(message: Component): Component = {
+        val config = plugin.getConfig()
+        val urlColor = config.getString("chat.url-color", "#4430cc")
+
         message.replaceText { config =>
             config
                 .`match`(URL_PATTERN)
                 .replacement((mr, _) => 
                     Component.text(mr.group())
-                        .color(TextColor.fromHexString("#4430cc"))
+                        .color(TextColor.fromHexString(urlColor))
                         .clickEvent(ClickEvent.openUrl(mr.group()))
                 )
         }
