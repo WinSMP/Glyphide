@@ -33,7 +33,7 @@ class ChatListener(plugin: Plugin) extends Listener {
 
     private def highlightUrl(message: Component): Component = {
         val config = plugin.getConfig()
-        val urlColor = config.getString("chat.url-color", "#4430cc")
+        val urlColor = config.getString("chat.url-color", "#6353d4")
 
         message.replaceText { config =>
             config
