@@ -25,7 +25,7 @@ class FormatUrl {
     
     private val httpClient = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)
-        .connectTimeout(java.time.Duration.ofSeconds(5))
+        .connectTimeout(java.time.Duration.ofSeconds(2))
         .executor(Executors.newWorkStealingPool(4))
         .build()
 
