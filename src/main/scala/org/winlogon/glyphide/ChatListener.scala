@@ -39,7 +39,7 @@ class ChatListener(plugin: Plugin) extends Listener {
         val hoverText = info.description match {
             case Some(desc) => {
                 val lineEnding = if (desc.length > descLength) "..." else ""
-                val description = s"${desc.take(descLength)}$lineEnding}"
+                val description = s"${desc.take(descLength)}$lineEnding"
                 s"${info.title} — $description"
             }
             case None => info.title
