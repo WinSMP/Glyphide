@@ -10,7 +10,7 @@ import org.bukkit.Material
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
-import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -24,6 +24,8 @@ import java.util.regex.Pattern
 
 class ChatListener(plugin: Plugin) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
+    private val formatUrl = FormatUrl()
+
     private val hoverConfigPrefix = "chat.item-placeholder"
     private var isItemPlaceholderEnabled: Boolean = false
     private var itemToken: String = "[item]"
@@ -31,19 +33,40 @@ class ChatListener(plugin: Plugin) extends Listener {
 
     private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
 
+    private def generateHoverText(
+        default: Component, info: UrlInformation, descLength: Int
+    ): Component = {
+        val hoverText = info.description match {
+            case Some(desc) => {
+                val lineEnding = if (desc.length > descLength) "..." else ""
+                val description = s"${desc.take(descLength)}$lineEnding}"
+                s"${info.title} — $description"
+            }
+            case None => info.title
+        }
+        default.hoverEvent(HoverEvent.showText(Component.text(hoverText)))
+    }
+
     private def highlightUrl(message: Component): Component = {
         val config = plugin.getConfig()
-        val urlColor = config.getString("chat.url-color", "#6353d4")
+        val urlColor = config.getString("chat.url.color", "#6353d4")
+        val addHover = config.getBoolean("chat.url.hover", true)
+        val descLength = config.getInt("chat.url.description-max-length", 15)
 
         message.replaceText { config =>
             config
                 .`match`(URL_PATTERN)
-                .replacement((mr, _) => 
-                    Component.text(mr.group())
+                .replacement((mr, _) => {
+                    val text = Component.text(mr.group())
                         .color(TextColor.fromHexString(urlColor))
                         .clickEvent(ClickEvent.openUrl(mr.group()))
-                )
-        }
+
+                    formatUrl.getUrlInformation(mr.group()) match {
+                        case Some(info) if addHover => generateHoverText(text, info, descLength)
+                        case _ => text
+                    }
+                })
+            }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
