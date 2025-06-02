@@ -28,8 +28,4 @@ class GlyphideFormatter extends JavaPlugin {
             .register()
             getLogger.info("Glyphide has been enabled!")
     }
-
-    override def onDisable(): Unit = {
-        getLogger.info("Glyphide has been disabled!")
-    }
 }
