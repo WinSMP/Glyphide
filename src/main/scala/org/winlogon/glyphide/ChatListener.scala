@@ -29,7 +29,6 @@ class ChatListener(plugin: Plugin) extends Listener {
     private val hoverConfigPrefix = "chat.item-placeholder"
     private var isItemPlaceholderEnabled: Boolean = false
     private var itemToken: String = "[item]"
-    private var shouldUseHover: Boolean = false
 
     private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
 
@@ -78,7 +77,6 @@ class ChatListener(plugin: Plugin) extends Listener {
 
         isItemPlaceholderEnabled = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
         itemToken = config.getString(s"$hoverConfigPrefix.token", "[item]")
-        shouldUseHover = config.getBoolean(s"$hoverConfigPrefix.hover", false)
 
         given TagResolver = Formatter.basicResolver
 

@@ -15,4 +15,3 @@ chat:
   item-placeholder:
     enabled: false
     token: "[item]"
-    hover: false
