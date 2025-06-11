@@ -18,6 +18,7 @@ class GlyphideFormatter extends JavaPlugin {
         pluginManager.registerEvents(ChatListener(this), this)
 
         CommandAPICommand("ghreload")
+            .withShortDescription("Reloads the Glyphide formatter's configuration")
             .withPermission("glyphide.admin")
             .executesPlayer((player: Player, args: CommandArguments) => {
                 reloadConfig()

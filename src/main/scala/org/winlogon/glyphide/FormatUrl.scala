@@ -1,5 +1,7 @@
 package org.winlogon.glyphide
 
+import org.unbescape.html.HtmlEscape
+
 import java.net.URI
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import java.net.http.HttpResponse.BodyHandlers
@@ -59,10 +61,14 @@ class FormatUrl {
             val html = new String(bytes.take(8192), StandardCharsets.UTF_8)
             
             val titleMatcher = titlePattern.matcher(html)
-            val title = if (titleMatcher.find()) titleMatcher.group(1) else ""
+            val title = if (titleMatcher.find()) HtmlEscape.unescapeHtml(titleMatcher.group(1)) else ""
             
             val descMatcher = descPattern.matcher(html)
-            val description = if (descMatcher.find()) Some(descMatcher.group(1)) else None
+            val description = if (descMatcher.find()) {
+                Some(HtmlEscape.unescapeHtml(descMatcher.group(1)))
+            } else {
+                None
+            }
             
             UrlInformation(title, description)
         }.toOption.foreach(info => cache.put(url, info))

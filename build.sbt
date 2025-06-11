@@ -34,10 +34,10 @@ assembly / assemblyMergeStrategy := {
 assembly / mainClass := Some(mainScalaClass)
 
 libraryDependencies ++= Seq(
-  "io.papermc.paper" % "paper-api" % "1.21.4-R0.1-SNAPSHOT" % Provided,
+  "io.papermc.paper" % "paper-api" % "1.21.5-R0.1-SNAPSHOT" % Provided,
   "net.luckperms" % "api" % "5.4" % Provided,
   "dev.jorel" % "commandapi-bukkit-core" % "9.7.0" % Provided,
-  "net.kyori" % "adventure-text-minimessage" % "4.18.0" % Provided,
+  "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,
 )
 
 resolvers ++= Seq(

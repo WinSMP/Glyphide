@@ -11,6 +11,7 @@ The plugin supports advanced text formatting using MiniMessage and legacy Minecr
 - **Dynamic Chat Formatting**: Customize chat messages with placeholders for player prefixes, suffixes, usernames, and world names.
 - **LuckPerms Integration**: Automatically fetches player prefixes and suffixes from LuckPerms.
 - **Advanced Text Formatting**: Supports MiniMessage and legacy Minecraft formatting codes for rich text formatting.
+- **Automatic Link Highlighting and Previews**: Highlights links in blue and when hovering the link, it shows its website title.
 - **Customizable Configuration**: Easily configure chat formats and permissions via `config.yml`.
 - **Admin Commands**: Includes a `/ghreload` command to reload the configuration without restarting the server.
 - **Permission-Based Formatting**: Allows administrators to apply special formatting to their messages.
