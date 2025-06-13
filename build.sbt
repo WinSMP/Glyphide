@@ -4,20 +4,13 @@ import sbtassembly.AssemblyPlugin.defaultShellScript
 lazy val projectName = "Glyphide"
 lazy val orgName = "org.winlogon"
 lazy val mainScalaClass = s"$orgName.glyphide.$projectName"
-lazy val buildScalaVersion = "3.3.5"
+lazy val buildScalaVersion = "3.3.6"
 
 ThisBuild / scalaVersion     := buildScalaVersion
 ThisBuild / version          := "0.2.0-SNAPSHOT"
 ThisBuild / organization     := orgName
 ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
-
-// GitHub CI
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
-ThisBuild / publishTo := None
-publish / skip := true
-
-crossScalaVersions := Seq(buildScalaVersion)
 
 lazy val root = (project in file("."))
   .settings(
@@ -38,9 +31,19 @@ libraryDependencies ++= Seq(
   "net.luckperms" % "api" % "5.4" % Provided,
   "dev.jorel" % "commandapi-bukkit-core" % "9.7.0" % Provided,
   "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,
+
+  // testing
+  // "com.github.MockBukkit" % "MockBukkit" % "v1.21-SNAPSHOT" % Test,
+  "org.mockbukkit.mockbukkit" % "mockbukkit-v1.21" % "v4.52.0" % Test,
+  "org.mockito" % "mockito-core" % "5.18.0" % Test,
+  "io.papermc.paper" % "paper-api" % "1.21.5-R0.1-SNAPSHOT" % Test,
+
+  // junit jupiter
+  "com.github.sbt.junit" % "jupiter-interface" % "0.15.0" % Test
 )
 
 resolvers ++= Seq(
   "papermc-repo" at "https://repo.papermc.io/repository/maven-public/",
   "codemc" at "https://repo.codemc.org/repository/maven-public/",
+  // "jitpack" at "https://jitpack.io/",
 )
