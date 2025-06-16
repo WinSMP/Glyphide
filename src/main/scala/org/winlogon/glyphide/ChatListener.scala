@@ -78,11 +78,17 @@ class ChatListener(plugin: Plugin) extends Listener {
         isItemPlaceholderEnabled = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
         itemToken = config.getString(s"$hoverConfigPrefix.token", "[item]")
 
-        given TagResolver = Formatter.basicResolver
+        val playerHasPermission = player.hasPermission(Formatter.Permission.Admin.name)
+        Bukkit.getLogger.info(s"playerHasPermission: $playerHasPermission")
+        val resolver: TagResolver = if (playerHasPermission) {
+            Formatter.advancedResolver
+        } else {
+            Formatter.basicResolver
+        }
 
         val replacements = Placeholders(
-            prefix = getPrefix(player),
-            suffix = getSuffix(player),
+            prefix = getPrefix(player)(using resolver),
+            suffix = getSuffix(player)(using resolver),
             username = player.getName,
             world = player.getWorld.getName
         )
@@ -127,7 +133,7 @@ class ChatListener(plugin: Plugin) extends Listener {
         )
 
         val component = miniMessage
-            .deserialize(chatFormat, summon[TagResolver])
+            .deserialize(chatFormat, resolver)
             .replaceText(builder => builder.matchLiteral("$prefix").replacement(replacements.prefix))
             .replaceText(builder => builder.matchLiteral("$suffix").replacement(replacements.suffix))
             .replaceText(builder => builder.matchLiteral("$message").replacement(highlightedMsg))

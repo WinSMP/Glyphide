@@ -26,13 +26,26 @@ object Formatter {
         .build()
 
     private val advancedTagsResolver = TagResolver.builder()
+        .resolver(StandardTags.clickEvent())
         .resolver(StandardTags.color())
         .resolver(StandardTags.decorations())
+        .resolver(StandardTags.defaults())
+        .resolver(StandardTags.font())
         .resolver(StandardTags.gradient())
-        .resolver(StandardTags.rainbow())
-        .resolver(StandardTags.clickEvent())
         .resolver(StandardTags.hoverEvent())
+        .resolver(StandardTags.insertion())
+        .resolver(StandardTags.keybind())
+        .resolver(StandardTags.nbt())
+        .resolver(StandardTags.newline())
+        .resolver(StandardTags.pride())
+        .resolver(StandardTags.rainbow())
+        .resolver(StandardTags.reset())
+        .resolver(StandardTags.score())
+        .resolver(StandardTags.selector())
+        .resolver(StandardTags.shadowColor())
         .resolver(StandardTags.transition())
+        .resolver(StandardTags.translatable())
+        .resolver(StandardTags.translatableFallback())
         .build()
 
     given basicResolver: TagResolver = basicTagsResolver
@@ -60,10 +73,10 @@ object Formatter {
             .getOrElse(Component.empty())
     }
 
-    def getPrefix(player: Player)(using resolver: TagResolver): Component = 
+    def getPrefix(player: Player)(using resolver: TagResolver): Component =
         getComponent(player, _.prefix)
 
-    def getSuffix(player: Player)(using resolver: TagResolver): Component = 
+    def getSuffix(player: Player)(using resolver: TagResolver): Component =
         getComponent(player, _.suffix)
 
     def formatMessage(player: Player, message: String): Component = {
@@ -78,7 +91,7 @@ object Formatter {
         val converted = convertLegacyToMiniMessage(message)
             .replaceAll("\\\\>", ">")
             .replaceAll("\\\\<", "<")
-        
+
         Try(MiniMessage.builder().build().deserialize(converted, summon[TagResolver])) match {
             case Success(c) => c
             case Failure(_) => LegacyComponentSerializer.legacyAmpersand().deserialize(converted)
