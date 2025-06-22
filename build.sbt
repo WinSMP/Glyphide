@@ -31,6 +31,7 @@ libraryDependencies ++= Seq(
   "net.luckperms" % "api" % "5.4" % Provided,
   "dev.jorel" % "commandapi-bukkit-core" % "9.7.0" % Provided,
   "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,
+  "org.winlogon" % "retrohue" % "0.1.0" % Provided,
 
   // testing
   // "com.github.MockBukkit" % "MockBukkit" % "v1.21-SNAPSHOT" % Test,
@@ -45,5 +46,5 @@ libraryDependencies ++= Seq(
 resolvers ++= Seq(
   "papermc-repo" at "https://repo.papermc.io/repository/maven-public/",
   "codemc" at "https://repo.codemc.org/repository/maven-public/",
-  // "jitpack" at "https://jitpack.io/",
+  "winlogon-code" at "https://maven.winlogon.org/releases",
 )

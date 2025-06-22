@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 package org.winlogon.glyphide
 
-import org.bukkit.{Bukkit, ChatColor}
+import org.bukkit.{Material, Bukkit, ChatColor}
 import org.bukkit.entity.Player
 import org.bukkit.event.{EventHandler, Listener, EventPriority}
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
-import org.bukkit.Material
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
