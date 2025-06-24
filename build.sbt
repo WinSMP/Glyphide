@@ -27,9 +27,9 @@ assembly / assemblyMergeStrategy := {
 assembly / mainClass := Some(mainScalaClass)
 
 libraryDependencies ++= Seq(
-  "io.papermc.paper" % "paper-api" % "1.21.5-R0.1-SNAPSHOT" % Provided,
+  "io.papermc.paper" % "paper-api" % "1.21.6-R0.1-SNAPSHOT" % Provided,
   "net.luckperms" % "api" % "5.4" % Provided,
-  "dev.jorel" % "commandapi-bukkit-core" % "9.7.0" % Provided,
+  "dev.jorel" % "commandapi-bukkit-core" % "10.1.0" % Provided,
   "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,
   "org.winlogon" % "retrohue" % "0.1.0" % Provided,
 
@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
   // "com.github.MockBukkit" % "MockBukkit" % "v1.21-SNAPSHOT" % Test,
   "org.mockbukkit.mockbukkit" % "mockbukkit-v1.21" % "v4.52.0" % Test,
   "org.mockito" % "mockito-core" % "5.18.0" % Test,
-  "io.papermc.paper" % "paper-api" % "1.21.5-R0.1-SNAPSHOT" % Test,
+  "io.papermc.paper" % "paper-api" % "1.21.6-R0.1-SNAPSHOT" % Test,
 
   // junit jupiter
   "com.github.sbt.junit" % "jupiter-interface" % "0.15.0" % Test
