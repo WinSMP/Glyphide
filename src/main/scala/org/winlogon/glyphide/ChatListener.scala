@@ -131,9 +131,7 @@ class ChatListener(plugin: Plugin) extends Listener {
 
         val highlightedMsg = highlightUrl(finalMsgComp)
 
-        val chatFormat = convertLegacyToMiniMessage(
-            ChatColor.translateAlternateColorCodes('&', rawChatFormat)
-        )
+        val chatFormat = convertLegacyToMiniMessage(rawChatFormat)
 
         val component = miniMessage
             .deserialize(chatFormat, resolver)

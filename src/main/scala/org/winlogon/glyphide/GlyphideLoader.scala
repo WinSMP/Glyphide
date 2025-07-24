@@ -22,7 +22,7 @@ class GlyphideLoader extends PluginLoader {
 
         resolver.addRepository(
             RemoteRepository.Builder(
-                "central",
+                "winlogon",
                 "default",
                 "https://maven.winlogon.org/releases"
             ).build()
