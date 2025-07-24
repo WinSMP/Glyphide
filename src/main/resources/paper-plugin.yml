@@ -1,5 +1,5 @@
 name: 'Glyphide'
-version: '0.2.0-SNAPSHOT'
+version: '0.3.0'
 main: 'org.winlogon.glyphide.GlyphideFormatter'
 loader: 'org.winlogon.glyphide.GlyphideLoader'
 description: 'A highly‑customizable chat‑formatting plugin for Paper Minecraft servers, powered by MiniMessage and placeholders for dynamic, colorful in‑game chat.'

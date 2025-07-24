@@ -7,7 +7,7 @@ lazy val mainScalaClass = s"$orgName.glyphide.$projectName"
 lazy val buildScalaVersion = "3.3.6"
 
 ThisBuild / scalaVersion     := buildScalaVersion
-ThisBuild / version          := "0.2.0-SNAPSHOT"
+ThisBuild / version          := "0.3.0"
 ThisBuild / organization     := orgName
 ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
