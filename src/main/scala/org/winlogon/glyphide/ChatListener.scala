@@ -7,8 +7,7 @@ import org.bukkit.event.{EventHandler, Listener, EventPriority}
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextReplacementConfig
+import net.kyori.adventure.text.{Component, TextReplacementConfig}
 import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
@@ -19,7 +18,9 @@ import io.papermc.paper.event.player.AsyncChatEvent
 
 import Formatter.{given, *}
 
+import scala.jdk.CollectionConverters.*
 import java.util.regex.Pattern
+import java.util.{List => JavaList}
 
 class ChatListener(plugin: Plugin) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
@@ -27,7 +28,7 @@ class ChatListener(plugin: Plugin) extends Listener {
 
     private val hoverConfigPrefix = "chat.item-placeholder"
     private var isItemPlaceholderEnabled: Boolean = false
-    private var itemToken: String = "[item]"
+    private var itemTokens: List[String] = List("[item]")
 
     private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
 
@@ -75,10 +76,13 @@ class ChatListener(plugin: Plugin) extends Listener {
         val config = plugin.getConfig()
 
         isItemPlaceholderEnabled = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
-        itemToken = config.getString(s"$hoverConfigPrefix.token", "[item]")
+        itemTokens = Option(config.getStringList(s"$hoverConfigPrefix.tokens"))
+            .getOrElse(JavaList.of("[item]"))
+            .asScala
+            .toList
 
         val playerHasPermission = player.hasPermission(Formatter.Permission.Admin.name)
-        Bukkit.getLogger.info(s"playerHasPermission: $playerHasPermission")
+
         val resolver: TagResolver = if (playerHasPermission) {
             Formatter.advancedResolver
         } else {
@@ -98,7 +102,7 @@ class ChatListener(plugin: Plugin) extends Listener {
             .replace("$world", replacements.world)
 
         // format message based on permissions
-        val msg = formatMessage(player, message)
+        val msg = formatMessageByPermission(player, message)
 
         val heldOpt: Option[ItemStack] =
             Option(player.getInventory.getItemInMainHand)
@@ -112,13 +116,13 @@ class ChatListener(plugin: Plugin) extends Listener {
                 val hoverEvent = item.asHoverEvent()
 
                 // replace any literal placeholder in the message
-                msg.replaceText { builder =>
-                    builder
-                    .matchLiteral(itemToken)
-                    .replacement(
-                        nameComp.hoverEvent(hoverEvent)
-                    )
-                    .build()
+                itemTokens.foldLeft(msg) { (component, token) =>
+                    component.replaceText { builder =>
+                        builder
+                            .matchLiteral(token)
+                            .replacement(nameComp.hoverEvent(hoverEvent))
+                            .build()
+                    }
                 }
             case None =>
                 // air or no item: leave the message alone
