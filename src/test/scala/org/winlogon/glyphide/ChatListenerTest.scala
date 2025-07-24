@@ -24,7 +24,6 @@ import org.mockito.Mockito.{mock, verify, when}
 import java.util.UUID
 
 class ChatListenerTest {
-
     var server: ServerMock = _
     var plugin: GlyphideFormatter = _
     var player: PlayerMock = _
@@ -34,6 +33,7 @@ class ChatListenerTest {
         server = MockBukkit.mock()
         plugin = MockBukkit.load(classOf[GlyphideFormatter])
         player = server.addPlayer()
+
         val mockWorld = server.addSimpleWorld("world")
         server.addWorld(mockWorld)
     }
@@ -50,22 +50,18 @@ class ChatListenerTest {
         plugin.saveConfig()
         plugin.reloadConfig()
 
-        // create listener and event
         val listener = new ChatListener(plugin)
         val event = mock(classOf[AsyncChatEvent])
         when(event.getPlayer).thenReturn(player)
         when(event.message()).thenReturn(Component.text("Hello"))
         when(event.viewers()).thenReturn(java.util.Collections.singleton(player))
 
-        // trigger event
         listener.onPlayerChat(event)
 
-        // capture rendered component
         val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
         verify(event).renderer(captor.capture())
         val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
 
-        // verify basic formatting
         val plainText = PlainTextComponentSerializer.plainText().serialize(rendered)
         assertTrue(plainText.contains("TestPlayer > Hello"))
     }
