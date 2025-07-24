@@ -14,9 +14,17 @@ class GlyphideLoader extends PluginLoader {
 
         resolver.addRepository(
             RemoteRepository.Builder(
-                "central", 
-                "default", 
+                "central",
+                "default",
                 MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR
+            ).build()
+        );
+
+        resolver.addRepository(
+            RemoteRepository.Builder(
+                "central",
+                "default",
+                "https://maven.winlogon.org/releases"
             ).build()
         );
 
@@ -27,7 +35,13 @@ class GlyphideLoader extends PluginLoader {
             )
         );
 
+        resolver.addDependency(
+            Dependency(
+                DefaultArtifact("org.winlogon:retrohue:0.1.0"),
+                null
+            )
+        );
+
         classpathBuilder.addLibrary(resolver);
     }
-
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 package org.winlogon.glyphide
 
-import org.bukkit.ChatColor
+import org.winlogon.retrohue.RetroHue
 import org.bukkit.entity.Player
 
 import net.kyori.adventure.text.Component
@@ -48,6 +48,10 @@ object Formatter {
         .resolver(StandardTags.translatableFallback())
         .build()
 
+    val legacySerializer = LegacyComponentSerializer.legacyAmpersand()
+    val miniMessageSerializer = MiniMessage.miniMessage()
+    val formatter = RetroHue(miniMessageSerializer)
+
     given basicResolver: TagResolver = basicTagsResolver
     given advancedResolver: TagResolver = advancedTagsResolver
 
@@ -63,7 +67,7 @@ object Formatter {
     }
 
     private def deserializeComponent(input: String)(using resolver: TagResolver): Component = {
-        MiniMessage.miniMessage().deserialize(convertLegacyToMiniMessage(input), resolver)
+        miniMessageSerializer.deserialize(convertLegacyToMiniMessage(input), resolver)
     }
 
     private def getComponent(player: Player, extractor: User => Option[String])(using resolver: TagResolver): Component = {
@@ -79,7 +83,7 @@ object Formatter {
     def getSuffix(player: Player)(using resolver: TagResolver): Component =
         getComponent(player, _.suffix)
 
-    def formatMessage(player: Player, message: String): Component = {
+    def formatMessageByPermission(player: Player, message: String): Component = {
         player.hasPermission(Permission.Admin.name) match {
             case true => usingAdvancedResolver(message)
             case false => basicFormat(message)
@@ -89,25 +93,20 @@ object Formatter {
     private def usingAdvancedResolver(message: String): Component = {
         given TagResolver = advancedResolver
         val converted = convertLegacyToMiniMessage(message)
-            .replaceAll("\\\\>", ">")
-            .replaceAll("\\\\<", "<")
 
-        Try(MiniMessage.builder().build().deserialize(converted, summon[TagResolver])) match {
+        Try(miniMessageSerializer.deserialize(converted, summon[TagResolver])) match {
             case Success(c) => c
-            case Failure(_) => LegacyComponentSerializer.legacyAmpersand().deserialize(converted)
+            case Failure(_) => legacySerializer.deserialize(converted)
         }
     }
 
     private def basicFormat(message: String): Component = {
-        LegacyComponentSerializer.legacyAmpersand().deserialize(
+        legacySerializer.deserialize(
             message
                 .replaceAll("(?i)&k", "")
                 .replaceAll("(?i)&([0-9a-f])", "&$1")
         )
     }
 
-    def convertLegacyToMiniMessage(input: String): String = {
-        val translated = ChatColor.translateAlternateColorCodes('&', input)
-        MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(translated))
-    }
+    def convertLegacyToMiniMessage(input: String): String = formatter.convertToMiniMessage(input, '&')
 }
