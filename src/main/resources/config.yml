@@ -14,4 +14,4 @@ chat:
 
   item-placeholder:
     enabled: false
-    token: "[item]"
+    token: ["[item]"]
