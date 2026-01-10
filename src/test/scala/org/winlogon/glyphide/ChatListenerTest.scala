@@ -12,26 +12,26 @@ import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
-import org.bukkit.{ChatColor, Material}
-import org.bukkit.event.player.PlayerChatEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.Plugin
-import org.junit.jupiter.api.Assertions._
+import org.bukkit.Material
 import org.junit.jupiter.api.{AfterEach, BeforeEach, Test}
+import org.junit.jupiter.api.Assertions._
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.{mock, verify, when}
 
-import java.util.UUID
+import scala.compiletime.uninitialized
 
-class ChatListenerTest {
-    var server: ServerMock = _
-    var plugin: GlyphideFormatter = _
-    var player: PlayerMock = _
+import java.util.Collections
+
+open class ChatListenerTest {
+    var server: ServerMock = uninitialized
+    var plugin: GlyphideFormatter = uninitialized
+    var player: PlayerMock = uninitialized
 
     @BeforeEach
     def setUp(): Unit = {
         server = MockBukkit.mock()
-        plugin = MockBukkit.load(classOf[GlyphideFormatter])
+        plugin = MockBukkit.loadSimple(classOf[GlyphideFormatter])
         player = server.addPlayer()
 
         val mockWorld = server.addSimpleWorld("world")
@@ -50,11 +50,11 @@ class ChatListenerTest {
         plugin.saveConfig()
         plugin.reloadConfig()
 
-        val listener = new ChatListener(plugin)
+        val listener = ChatListener(plugin)
         val event = mock(classOf[AsyncChatEvent])
         when(event.getPlayer).thenReturn(player)
         when(event.message()).thenReturn(Component.text("Hello"))
-        when(event.viewers()).thenReturn(java.util.Collections.singleton(player))
+        when(event.viewers()).thenReturn(Collections.singleton(player))
 
         listener.onPlayerChat(event)
 
@@ -75,7 +75,7 @@ class ChatListenerTest {
         plugin.reloadConfig()
 
         // give player an item
-        val diamondSword = new ItemStack(Material.DIAMOND_SWORD)
+        val diamondSword = ItemStack.of(Material.DIAMOND_SWORD)
         player.getInventory.setItemInMainHand(diamondSword)
 
         // create listener and event
@@ -83,7 +83,7 @@ class ChatListenerTest {
         val event = mock(classOf[AsyncChatEvent])
         when(event.getPlayer).thenReturn(player)
         when(event.message()).thenReturn(Component.text("Check [item]"))
-        when(event.viewers()).thenReturn(java.util.Collections.singleton(player))
+        when(event.viewers()).thenReturn(Collections.singleton(player))
 
         // trigger event
         listener.onPlayerChat(event)
@@ -112,11 +112,11 @@ class ChatListenerTest {
         plugin.reloadConfig()
 
         // create listener and event
-        val listener = new ChatListener(plugin)
+        val listener = ChatListener(plugin)
         val event = mock(classOf[AsyncChatEvent])
         when(event.getPlayer).thenReturn(player)
         when(event.message()).thenReturn(Component.text("Visit https://example.com"))
-            when(event.viewers()).thenReturn(java.util.Collections.singleton(player))
+            when(event.viewers()).thenReturn(Collections.singleton(player))
 
             // trigger event
             listener.onPlayerChat(event)
@@ -139,11 +139,11 @@ class ChatListenerTest {
         player.addAttachment(plugin, "glyphide.admin", true)
 
         // create listener and event
-        val listener = new ChatListener(plugin)
+        val listener = ChatListener(plugin)
         val event = mock(classOf[AsyncChatEvent])
         when(event.getPlayer).thenReturn(player)
         when(event.message()).thenReturn(Component.text("<red>Admin message</red>"))
-        when(event.viewers()).thenReturn(java.util.Collections.singleton(player))
+        when(event.viewers()).thenReturn(Collections.singleton(player))
 
         // trigger event
         listener.onPlayerChat(event)
