@@ -10,7 +10,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.luckperms.api.model.user.User
-import net.luckperms.api.{LuckPerms, LuckPermsProvider}
+import net.luckperms.api.LuckPermsProvider
 
 import scala.util.{Try, Success, Failure}
 

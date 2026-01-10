@@ -1,26 +1,24 @@
 // SPDX-License-Identifier: MPL-2.0
 package org.winlogon.glyphide
 
-import org.bukkit.{Material, Bukkit, ChatColor}
-import org.bukkit.entity.Player
-import org.bukkit.event.{EventHandler, Listener, EventPriority}
-import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.Plugin
-
-import net.kyori.adventure.text.{Component, TextReplacementConfig}
-import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
-import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
-import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-
 import io.papermc.paper.event.player.AsyncChatEvent
 
-import Formatter.{given, *}
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
+import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
-import scala.jdk.CollectionConverters.*
+import org.bukkit.Material
+import org.bukkit.event.{EventHandler, EventPriority, Listener}
+import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.Plugin
+import org.winlogon.glyphide.Formatter.{*, given}
+
+import java.util.List as JavaList
 import java.util.regex.Pattern
-import java.util.{List => JavaList}
+import scala.jdk.CollectionConverters.*
 
 class ChatListener(plugin: Plugin) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
@@ -30,6 +28,7 @@ class ChatListener(plugin: Plugin) extends Listener {
     private var isItemPlaceholderEnabled: Boolean = false
     private var itemTokens: List[String] = List("[item]")
 
+    // TODO: also match `http://`
     private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
 
     private def generateHoverText(
@@ -47,7 +46,7 @@ class ChatListener(plugin: Plugin) extends Listener {
     }
 
     private def highlightUrl(message: Component): Component = {
-        val config = plugin.getConfig()
+        val config = plugin.getConfig
         val urlColor = config.getString("chat.url.color", "#6353d4")
         val addHover = config.getBoolean("chat.url.hover", true)
         val descLength = config.getInt("chat.url.description-max-length", 15)
@@ -73,7 +72,7 @@ class ChatListener(plugin: Plugin) extends Listener {
         val player = event.getPlayer
         val message = PlainTextComponentSerializer.plainText().serialize(event.message())
 
-        val config = plugin.getConfig()
+        val config = plugin.getConfig
 
         isItemPlaceholderEnabled = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
         itemTokens = Option(config.getStringList(s"$hoverConfigPrefix.tokens"))
