@@ -1,10 +1,8 @@
-import Dependencies._
-import sbtassembly.AssemblyPlugin.defaultShellScript
-
 lazy val projectName = "Glyphide"
 lazy val orgName = "org.winlogon"
-lazy val mainScalaClass = s"$orgName.glyphide.$projectName"
-lazy val buildScalaVersion = "3.3.6"
+lazy val mainScalaClass = s"$orgName.glyphide.GlyphideLoader"
+lazy val buildScalaVersion = "3.7.4"
+lazy val minecraft = "1.21.10"
 
 ThisBuild / scalaVersion     := buildScalaVersion
 ThisBuild / version          := "0.3.0"
@@ -27,20 +25,18 @@ assembly / assemblyMergeStrategy := {
 assembly / mainClass := Some(mainScalaClass)
 
 libraryDependencies ++= Seq(
-  "io.papermc.paper" % "paper-api" % "1.21.6-R0.1-SNAPSHOT" % Provided,
-  "net.luckperms" % "api" % "5.4" % Provided,
-  "dev.jorel" % "commandapi-bukkit-core" % "10.1.0" % Provided,
+  "io.papermc.paper" % "paper-api" % s"$minecraft-R0.1-SNAPSHOT" % Provided,
+  "net.luckperms" % "api" % "5.5" % Provided,
   "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,
   "org.winlogon" % "retrohue" % "0.1.0" % Provided,
 
   // testing
-  // "com.github.MockBukkit" % "MockBukkit" % "v1.21-SNAPSHOT" % Test,
-  "org.mockbukkit.mockbukkit" % "mockbukkit-v1.21" % "v4.52.0" % Test,
-  "org.mockito" % "mockito-core" % "5.18.0" % Test,
-  "io.papermc.paper" % "paper-api" % "1.21.6-R0.1-SNAPSHOT" % Test,
+  "org.mockbukkit.mockbukkit" % "mockbukkit-v1.21" % "4.99.0" % Test,
+  "org.mockito" % "mockito-core" % "5.21.0" % Test,
+  "io.papermc.paper" % "paper-api" % s"$minecraft-R0.1-SNAPSHOT" % Test,
 
   // junit jupiter
-  "com.github.sbt.junit" % "jupiter-interface" % "0.15.0" % Test
+  "com.github.sbt.junit" % "jupiter-interface" % "0.17.0" % Test
 )
 
 resolvers ++= Seq(
