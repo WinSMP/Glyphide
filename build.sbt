@@ -5,7 +5,7 @@ lazy val buildScalaVersion = "3.7.4"
 lazy val minecraft = "1.21.10"
 
 ThisBuild / scalaVersion     := buildScalaVersion
-ThisBuild / version          := "0.3.0"
+ThisBuild / version          := "0.4.0"
 ThisBuild / organization     := orgName
 ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
