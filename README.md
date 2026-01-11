@@ -109,7 +109,7 @@ Glyphide highlights links and fetches the page title to display on hover. To imp
 
 ## Troubleshooting
 
-> [!INFO]
+> [!NOTE]
 > If chat formatting doesn't appear:
 >
 > * Check that `config.yml` syntax is valid YAML.
