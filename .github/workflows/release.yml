@@ -29,13 +29,13 @@ jobs:
         uses: sbt/setup-sbt@v1
 
       - name: Build JAR
-        run: sbt "++${{ github.ref_name#v }}" package
+        run: sbt package
 
       - name: Rename JAR
         run: |
-          # Find the built JAR file and rename it to Glyphide.jar
-          built_jar=$(ls target/scala-*/Glyphide*.jar)
-          mv "$built_jar" "target/scala-*/Glyphide.jar"
+          VERSION="${GITHUB_REF_NAME#v}"
+          JAR=$(ls target/scala-*/glyphide_3-*.jar)
+          mv "$JAR" "Glyphide-$VERSION.jar"
 
       - name: Create draft GitHub Release & upload JAR
         uses: softprops/action-gh-release@v2.3.2
@@ -43,4 +43,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           draft: true
           files: |
-            target/scala-*/Glyphide.jar
+            Glyphide-*.jar
