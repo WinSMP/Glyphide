@@ -6,12 +6,12 @@
 # - & codes (e.g., &a for green, &7 for gray)
 # - MiniMessage: Use <#hexcolor>, <gradient>, etc. (requires specific permissions)
 
-chat:
-  format: "&8[$world] $prefix&r &7| &b$username&r &8➤ &7$message"
-  url:
+format: "&8[$world] $prefix&r &7| &b$username&r &8➤ &7$message"
+url:
     color: "#4430cc"
     description-max-length: 15
+item-placeholder:
+  enabled: false
+  token: ["[item]"]
 
-  item-placeholder:
-    enabled: false
-    token: ["[item]"]
+use-hypixel-placeholders: true

@@ -16,17 +16,13 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 import org.winlogon.glyphide.Formatter.{*, given}
 
-import java.util.List as JavaList
 import java.util.regex.Pattern
 import scala.jdk.CollectionConverters.*
 
 class ChatListener(plugin: Plugin) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
     private val formatUrl = FormatUrl()
-
-    private val hoverConfigPrefix = "chat.item-placeholder"
-    private var isItemPlaceholderEnabled: Boolean = false
-    private var itemTokens: List[String] = List("[item]")
+    private val formatConfig = Configuration(plugin.getConfig)
 
     // TODO: also match `http://`
     private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
@@ -46,41 +42,43 @@ class ChatListener(plugin: Plugin) extends Listener {
     }
 
     private def highlightUrl(message: Component): Component = {
-        val config = plugin.getConfig
-        val urlColor = config.getString("chat.url.color", "#6353d4")
-        val addHover = config.getBoolean("chat.url.hover", true)
-        val descLength = config.getInt("chat.url.description-max-length", 15)
-
         message.replaceText { config =>
             config
                 .`match`(URL_PATTERN)
                 .replacement((mr, _) => {
                     val text = Component.text(mr.group())
-                        .color(TextColor.fromHexString(urlColor))
+                        .color(TextColor.fromHexString(formatConfig.urlColor))
                         .clickEvent(ClickEvent.openUrl(mr.group()))
 
+                    // Get URL information from the cache
                     formatUrl.getUrlInformation(mr.group()) match {
-                        case Some(info) if addHover => generateHoverText(text, info, descLength)
+                        // Cache hit
+                        case Some(info) if formatConfig.addHover =>
+                            generateHoverText(text, info, formatConfig.descLength)
+                        // XXX: why do we not always show information if it's re-fetched when we have a cache miss?
+                        // Cache miss - show just the formatted link
                         case _ => text
                     }
                 })
             }
     }
 
+    def replaceHypixelPlaceholders(message: String): String = {
+        formatConfig.hypixelPlaceholders.foldLeft(message) { case (acc, (placeholder, replacement)) =>
+            acc.replace(placeholder, replacement)
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     def onPlayerChat(event: AsyncChatEvent): Unit = {
         val player = event.getPlayer
-        val message = PlainTextComponentSerializer.plainText().serialize(event.message())
-
-        val config = plugin.getConfig
-
-        isItemPlaceholderEnabled = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
-        itemTokens = Option(config.getStringList(s"$hoverConfigPrefix.tokens"))
-            .getOrElse(JavaList.of("[item]"))
-            .asScala
-            .toList
+        var message = PlainTextComponentSerializer.plainText().serialize(event.message())
 
         val playerHasPermission = player.hasPermission(Formatter.Permission.Admin.name)
+
+        if (formatConfig.useHypixelPlaceholders) {
+           message = replaceHypixelPlaceholders(message)
+        }
 
         val resolver: TagResolver = if (playerHasPermission) {
             Formatter.advancedResolver
@@ -106,7 +104,7 @@ class ChatListener(plugin: Plugin) extends Listener {
         val heldOpt: Option[ItemStack] =
             Option(player.getInventory.getItemInMainHand)
                 .filter(item => item != null && item.getType != Material.AIR)
-                .filter(_ => isItemPlaceholderEnabled)
+                .filter(_ => formatConfig.isItemPlaceholderEnabled)
 
         val finalMsgComp: Component = heldOpt match {
             case Some(item) =>
@@ -115,7 +113,7 @@ class ChatListener(plugin: Plugin) extends Listener {
                 val hoverEvent = item.asHoverEvent()
 
                 // replace any literal placeholder in the message
-                itemTokens.foldLeft(msg) { (component, token) =>
+                formatConfig.itemTokens.foldLeft(msg) { (component, token) =>
                     component.replaceText { builder =>
                         builder
                             .matchLiteral(token)
