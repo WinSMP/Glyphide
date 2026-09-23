@@ -9,8 +9,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.luckperms.api.model.user.User
-import net.luckperms.api.LuckPermsProvider
 
 import scala.util.{Try, Success, Failure}
 
@@ -55,33 +53,21 @@ object Formatter {
     given basicResolver: TagResolver = basicTagsResolver
     given advancedResolver: TagResolver = advancedTagsResolver
 
-    extension (p: Player) {
-        private def luckPermsUser: Option[User] = Try(LuckPermsProvider.get())
-            .toOption
-            .flatMap(lp => Option(lp.getUserManager.getUser(p.getUniqueId)))
-    }
-
-    extension (user: User) {
-        private def prefix: Option[String] = Option(user.getCachedData.getMetaData.getPrefix)
-        private def suffix: Option[String] = Option(user.getCachedData.getMetaData.getSuffix)
-    }
-
     private def deserializeComponent(input: String)(using resolver: TagResolver): Component = {
         miniMessageSerializer.deserialize(convertLegacyToMiniMessage(input), resolver)
     }
 
-    private def getComponent(player: Player, extractor: User => Option[String])(using resolver: TagResolver): Component = {
-        player.luckPermsUser
-            .flatMap(extractor)
+    private def getComponent(player: Player, extractor: Player => Option[String])(using resolver: TagResolver): Component = {
+        extractor(player)
             .map(deserializeComponent)
             .getOrElse(Component.empty())
     }
 
     def getPrefix(player: Player)(using resolver: TagResolver): Component =
-        getComponent(player, _.prefix)
+        getComponent(player, LuckPermsService.prefix)
 
     def getSuffix(player: Player)(using resolver: TagResolver): Component =
-        getComponent(player, _.suffix)
+        getComponent(player, LuckPermsService.suffix)
 
     def formatMessageByPermission(player: Player, message: String): Component = {
         player.hasPermission(Permission.Admin.name) match {

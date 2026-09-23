@@ -63,12 +63,13 @@ class ChatListener(plugin: Plugin) extends Listener {
             }
     }
 
-    def replaceHypixelPlaceholders(message: String): String = {
+    private def replaceHypixelPlaceholders(message: String): String = {
         formatConfig.hypixelPlaceholders.foldLeft(message) { case (acc, (placeholder, replacement)) =>
             acc.replace(placeholder, replacement)
         }
     }
 
+    // TODO: add a proper architecture where: input source -> (one or more) transform -> sink
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     def onPlayerChat(event: AsyncChatEvent): Unit = {
         val player = event.getPlayer
