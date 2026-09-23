@@ -55,8 +55,9 @@ class ChatListener(plugin: Plugin) extends Listener {
                         // Cache hit
                         case Some(info) if formatConfig.addHover =>
                             generateHoverText(text, info, formatConfig.descLength)
-                        // XXX: why do we not always show information if it's re-fetched when we have a cache miss?
-                        // Cache miss - show just the formatted link
+                        // Cache miss - fetch runs async to avoid blocking chat;
+                        // hover appears from the next message onward.
+                        // Rationale: FormatUrl.getUrlInformation contracts.
                         case _ => text
                     }
                 })

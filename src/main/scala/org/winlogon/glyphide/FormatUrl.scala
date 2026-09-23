@@ -46,6 +46,18 @@ class FormatUrl {
         Pattern.CASE_INSENSITIVE
     )
 
+    /** Reads link metadata from an LRU cache, warming it asynchronously on miss.
+      *
+      * On a cache hit returns the cached title/description immediately. On a miss, it schedules a
+      * non-blocking background HTTP fetch and returns `None` immediately, so the caller never
+      * blocks.
+      *
+      * This is required because the caller runs inside an `AsyncChatEvent` and must return
+      * quickly - blocking on HTTP would delay chat rendering.
+      *
+      * The background fetch populates the cache, so the hover preview appears from the second
+      * occurrence of the URL onward.
+      */
     def getUrlInformation(url: String): Option[UrlInformation] = {
         Option(cache.get(url)) orElse {
             CompletableFuture.runAsync(() => fetchAndCache(url), requestorsExecutor)
