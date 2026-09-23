@@ -17,8 +17,7 @@ import scala.util.Try
   */
 object LuckPermsService {
     extension (p: Player) {
-        private def luckPermsUser: Option[User] = Try(LuckPermsProvider.get())
-            .toOption
+        private def luckPermsUser: Option[User] = Try(LuckPermsProvider.get()).toOption
             .flatMap(lp => Option(lp.getUserManager.getUser(p.getUniqueId)))
     }
 
@@ -29,7 +28,8 @@ object LuckPermsService {
 
     /** Resolves the player to their LuckPerms user, if LuckPerms is available and knows them.
       *
-      * Returns `None` instead of throwing when the provider is unregistered or the UUID has no LP user.
+      * Returns `None` instead of throwing when the provider is unregistered or the UUID has no LP
+      * user.
       */
     def user(player: Player): Option[User] = player.luckPermsUser
 

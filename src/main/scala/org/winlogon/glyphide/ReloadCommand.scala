@@ -15,7 +15,9 @@ class ReloadCommand(plugin: JavaPlugin) extends BasicCommand {
                 // call reloadConfig on the plugin instance
                 pluginRef.reloadConfig()
 
-                player.sendRichMessage("<gray>Glyphide configuration <dark_aqua>reloaded</dark_aqua>.</gray>")
+                player.sendRichMessage(
+                    "<gray>Glyphide configuration <dark_aqua>reloaded</dark_aqua>.</gray>"
+                )
             case _ =>
                 sender.sendRichMessage("<red>Only players can execute this command.</red>")
         }

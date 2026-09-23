@@ -17,13 +17,15 @@ object Formatter {
         case Admin extends Permission("glyphide.admin")
     }
 
-    private val basicTagsResolver = TagResolver.builder()
+    private val basicTagsResolver = TagResolver
+        .builder()
         .resolver(StandardTags.color())
         .resolver(StandardTags.decorations())
         .resolver(StandardTags.gradient())
         .build()
 
-    private val advancedTagsResolver = TagResolver.builder()
+    private val advancedTagsResolver = TagResolver
+        .builder()
         .resolver(StandardTags.clickEvent())
         .resolver(StandardTags.color())
         .resolver(StandardTags.decorations())
@@ -57,7 +59,9 @@ object Formatter {
         miniMessageSerializer.deserialize(convertLegacyToMiniMessage(input), resolver)
     }
 
-    private def getComponent(player: Player, extractor: Player => Option[String])(using resolver: TagResolver): Component = {
+    private def getComponent(player: Player, extractor: Player => Option[String])(using
+        resolver: TagResolver
+    ): Component = {
         extractor(player)
             .map(deserializeComponent)
             .getOrElse(Component.empty())
@@ -71,7 +75,7 @@ object Formatter {
 
     def formatMessageByPermission(player: Player, message: String): Component = {
         player.hasPermission(Permission.Admin.name) match {
-            case true => usingAdvancedResolver(message)
+            case true  => usingAdvancedResolver(message)
             case false => basicFormat(message)
         }
     }
@@ -94,5 +98,6 @@ object Formatter {
         )
     }
 
-    def convertLegacyToMiniMessage(input: String): String = formatter.convertToMiniMessage(input, '&')
+    def convertLegacyToMiniMessage(input: String): String =
+        formatter.convertToMiniMessage(input, '&')
 }

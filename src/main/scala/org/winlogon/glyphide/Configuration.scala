@@ -12,10 +12,10 @@ class Configuration(config: FileConfiguration) {
     val addHover: Boolean = config.getBoolean("url.hover", true)
     val descLength: Int = config.getInt("url.description-max-length", 15)
     val isItemPlaceholderEnabled: Boolean = config.getBoolean(s"$hoverConfigPrefix.enabled", false)
-    val itemTokens: List[String] = Option(config.getStringList(s"$hoverConfigPrefix.tokens"))
-            .getOrElse(JavaList.of("[item]"))
-            .asScala
-            .toList
+    val itemTokens: List[String] = Option(config.getStringList(s"$hoverConfigPrefix.token"))
+        .getOrElse(JavaList.of("[item]"))
+        .asScala
+        .toList
     val useHypixelPlaceholders: Boolean = config.getBoolean("use-hypixel-placeholders", false)
 
     val hypixelPlaceholders = Map(
