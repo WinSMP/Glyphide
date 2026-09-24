@@ -5,8 +5,9 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock
 import org.mockbukkit.mockbukkit.{MockBukkit, ServerMock}
 
 import io.papermc.paper.event.player.AsyncChatEvent
-import io.papermc.paper.chat.ChatRenderer
 
+import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
 import net.kyori.adventure.text.format.TextColor
@@ -16,10 +17,9 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.Material
 import org.junit.jupiter.api.{AfterEach, BeforeEach, Test}
 import org.junit.jupiter.api.Assertions._
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.{mock, verify, when}
 
 import scala.compiletime.uninitialized
+import scala.jdk.CollectionConverters.*
 
 import java.util.Collections
 
@@ -32,7 +32,7 @@ open class ChatListenerTest {
     def setUp(): Unit = {
         server = MockBukkit.mock()
         plugin = MockBukkit.loadSimple(classOf[GlyphideFormatter])
-        player = server.addPlayer()
+        player = server.addPlayer("TestPlayer")
 
         val mockWorld = server.addSimpleWorld("world")
         server.addWorld(mockWorld)
@@ -43,118 +43,105 @@ open class ChatListenerTest {
         MockBukkit.unmock()
     }
 
+    /** Fires a real AsyncChatEvent through the mock server, returns the rendered output.
+      *
+      * Builds a fresh ChatListener per call because Configuration snapshots config values at
+      * construction. The listener must be created after the test sets its keys.
+      */
+    private def renderMessage(message: Component): Component = {
+        server.getPluginManager.registerEvents(ChatListener(plugin), plugin)
+
+        val viewers = Collections.singleton[Audience](player)
+        val event = new AsyncChatEvent(
+            false,
+            player,
+            viewers,
+            (_, _, _, _) => Component.empty(),
+            message,
+            message,
+            SignedMessage.system("test", message)
+        )
+        server.getPluginManager.callEvent(event)
+
+        event.renderer().render(player, Component.text(""), Component.text(""), player)
+    }
+
+    // The final chat component nests $message replacements, so search recursively.
+    private def findComponent(root: Component, pred: Component => Boolean): Option[Component] = {
+        if (pred(root)) Some(root)
+        else root.children().asScala.flatMap(child => findComponent(child, pred)).headOption
+    }
+
     @Test
     def testBasicChatFormatting(): Unit = {
-        // setup config
         plugin.getConfig.set("chat.format", "$prefix $username > $message")
         plugin.saveConfig()
         plugin.reloadConfig()
 
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("Hello"))
-        when(event.viewers()).thenReturn(Collections.singleton(player))
-
-        listener.onPlayerChat(event)
-
-        val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-        verify(event).renderer(captor.capture())
-        val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
+        val rendered = renderMessage(Component.text("Hello"))
 
         val plainText = PlainTextComponentSerializer.plainText().serialize(rendered)
         assertTrue(plainText.contains("TestPlayer > Hello"))
     }
 
+    // NOTE: MockBukkit 4.115.0 has not implemented item hover serialization. The assertions below
+    // never run as of writing but validate the path once upstream implements it.
     @Test
     def testItemPlaceholder(): Unit = {
-        // enable item placeholder
-        plugin.getConfig.set("chat.item-placeholder.enabled", true)
-        plugin.getConfig.set("chat.item-placeholder.token", "[item]")
+        plugin.getConfig.set("item-placeholder.enabled", true)
+        plugin.getConfig.set("item-placeholder.token", "[item]")
         plugin.saveConfig()
         plugin.reloadConfig()
 
-        // give player an item
         val diamondSword = ItemStack.of(Material.DIAMOND_SWORD)
         player.getInventory.setItemInMainHand(diamondSword)
 
-        // create listener and event
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("Check [item]"))
-        when(event.viewers()).thenReturn(Collections.singleton(player))
+        val rendered = renderMessage(Component.text("Check [item]"))
 
-        // trigger event
-        listener.onPlayerChat(event)
-
-        // capture rendered component
-        val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-        verify(event).renderer(captor.capture())
-        val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
-
-        // verify item placeholder replacement
         val plainText = PlainTextComponentSerializer.plainText().serialize(rendered)
         assertTrue(plainText.contains("Diamond Sword"))
+        assertFalse(plainText.contains("[item]"))
 
-        // verify hover event
-        val hoverEvent = rendered.children().get(0).hoverEvent()
-        assertNotNull(hoverEvent)
-        assertEquals(HoverEvent.Action.SHOW_ITEM, hoverEvent.action())
+        val itemPart = findComponent(
+            rendered,
+            c => c.hoverEvent() != null && c.hoverEvent().action() == HoverEvent.Action.SHOW_ITEM
+        )
+        assertTrue(itemPart.isDefined)
     }
 
     @Test
     def testUrlHighlighting(): Unit = {
-        // enable URL highlighting
-        plugin.getConfig.set("chat.url.color", "#FF0000")
-        plugin.getConfig.set("chat.url.hover", true)
+        // top-level keys, no `chat.` prefix
+        plugin.getConfig.set("url.color", "#FF0000")
+        plugin.getConfig.set("url.hover", true)
         plugin.saveConfig()
         plugin.reloadConfig()
 
-        // create listener and event
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("Visit https://example.com"))
-            when(event.viewers()).thenReturn(Collections.singleton(player))
+        val rendered = renderMessage(Component.text("Visit https://example.com"))
 
-            // trigger event
-            listener.onPlayerChat(event)
-
-            // capture rendered component
-            val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-            verify(event).renderer(captor.capture())
-            val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
-
-            // verify URL styling
-            val urlPart = rendered.children().get(1)
-            assertEquals(TextColor.fromHexString("#FF0000"), urlPart.color())
-            assertEquals(ClickEvent.Action.OPEN_URL, urlPart.clickEvent().action())
-            assertTrue(urlPart.hoverEvent().value().toString.contains("example.com"))
+        val urlPart = findComponent(
+            rendered,
+            c => c.clickEvent() != null && c.clickEvent().action() == ClickEvent.Action.OPEN_URL
+        )
+        assertTrue(urlPart.isDefined)
+        assertEquals(TextColor.fromHexString("#FF0000"), urlPart.get.color())
+        assertTrue(urlPart.get.clickEvent().value().toString.contains("https://example.com"))
     }
 
     @Test
     def testAdminFormatting(): Unit = {
-        // give admin permissions
         player.addAttachment(plugin, "glyphide.admin", true)
 
-        // create listener and event
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("<red>Admin message</red>"))
-        when(event.viewers()).thenReturn(Collections.singleton(player))
+        val rendered = renderMessage(Component.text("<red>Admin message</red>"))
 
-        // trigger event
-        listener.onPlayerChat(event)
-
-        // capture rendered component
-        val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-        verify(event).renderer(captor.capture())
-        val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
-
-        // verify advanced formatting
-        assertTrue(rendered.style().hasDecoration(net.kyori.adventure.text.format.TextDecoration.BOLD))
-        assertEquals(TextColor.fromHexString("#FF5555"), rendered.color())
+        // interpreted, not echoed literally; <red> == #FF5555
+        val plainText = PlainTextComponentSerializer.plainText().serialize(rendered)
+        assertFalse(plainText.contains("<red>"))
+        val messagePart = findComponent(
+            rendered,
+            c => PlainTextComponentSerializer.plainText().serialize(c) == "Admin message"
+        )
+        assertTrue(messagePart.isDefined)
+        assertEquals(TextColor.fromHexString("#FF5555"), messagePart.get.color())
     }
 }

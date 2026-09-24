@@ -10,6 +10,10 @@ ThisBuild / organization     := orgName
 ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
 
+// MockBukkit's plugin classloader only sees the *system* classpath, so in-process testing hides
+// plugin classes from it, showing a "No jar file selected" error. We fork, like Gradle does.
+Test / fork := true
+
 lazy val root = (project in file("."))
     .settings(
         name := projectName,
