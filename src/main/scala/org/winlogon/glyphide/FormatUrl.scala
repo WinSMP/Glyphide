@@ -4,7 +4,7 @@ package org.winlogon.glyphide
 import org.unbescape.html.HtmlEscape
 
 import java.net.URI
-import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+import java.net.http.{HttpClient, HttpRequest}
 import java.net.http.HttpResponse.BodyHandlers
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -13,8 +13,6 @@ import java.util.regex.Pattern
 import java.util.{Collections, LinkedHashMap, Map}
 
 import scala.util.Try
-import scala.jdk.CollectionConverters.*
-
 case class UrlInformation(title: String, description: Option[String])
 
 class FormatUrl {

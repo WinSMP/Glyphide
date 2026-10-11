@@ -8,8 +8,7 @@ import java.util.logging.Logger
 /** Everything Glyphide reads from config.yml, as one consistent immutable value.
   *
   * Grouping these keeps a reload atomic: a message is rendered either entirely against the old
-  * values
-  * or entirely against the new ones, never against a mix.
+  * values or entirely against the new ones, never against a mix.
   */
 final case class Settings(
     config: Configuration,
@@ -34,7 +33,7 @@ object Settings {
         Settings(
             config = config,
             // read alongside everything else so a reload cannot change this later in the same
-            //message
+            // message
             chatFormat = fileConfig.getString("chat.format", defaultChatFormat),
             placeholders = PlaceholderRegistry.resolve(config, logger)
         )

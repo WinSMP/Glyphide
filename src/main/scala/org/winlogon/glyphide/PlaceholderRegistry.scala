@@ -20,9 +20,8 @@ object PlaceholderRegistry {
 
     /** The enabled placeholders, handler token defaults filled in, config problems reported.
       *
-      * Disabled sections, sections for ids no handler implements, and sections nobody
-      * configured are all simply absent from the result - an unimplemented placeholder must
-      * never affect chat.
+      * Disabled sections, sections for ids no handler implements, and sections nobody configured
+      * are all simply absent from the result - an unimplemented placeholder must never affect chat.
       */
     def resolve(config: Configuration, logger: Logger): List[ConfiguredPlaceholder] = {
         val enabled = handlers.flatMap(handler => resolveOne(handler, config.placeholderSections))
@@ -49,8 +48,8 @@ object PlaceholderRegistry {
             case _ => None
         }
 
-    /** Reports enabled sections with no handler, which is either a typo or a placeholder from
-      * a newer version of Glyphide than the one running.
+    /** Reports enabled sections with no handler, which is either a typo or a placeholder from a
+      * newer version of Glyphide than the one running.
       */
     private def warnAboutUnknownSections(
         sections: Map[String, Configuration.PlaceholderSection],

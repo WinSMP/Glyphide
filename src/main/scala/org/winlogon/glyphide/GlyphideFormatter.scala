@@ -3,6 +3,7 @@ package org.winlogon.glyphide
 
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import org.winlogon.glyphide.hotbar.InventoryGuard
 
 class GlyphideFormatter extends JavaPlugin {
     override def onEnable(): Unit = {

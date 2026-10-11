@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-package org.winlogon.glyphide
+package org.winlogon.glyphide.hotbar
 
-import org.bukkit.event.{EventHandler, EventPriority, Listener}
 import org.bukkit.event.inventory.{InventoryClickEvent, InventoryDragEvent}
+import org.bukkit.event.{EventHandler, EventPriority, Listener}
 
 /** Cancels item movement in Glyphide's preview windows.
   *

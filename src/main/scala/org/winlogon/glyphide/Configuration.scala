@@ -37,8 +37,7 @@ class Configuration(config: FileConfiguration) {
       * handler registration ([[PlaceholderRegistry]]) and a config section, never a change here.
       */
     val placeholderSections: Map[String, Configuration.PlaceholderSection] =
-        Option(config.getConfigurationSection(placeholderRoot))
-            .toList
+        Option(config.getConfigurationSection(placeholderRoot)).toList
             .flatMap(_.getKeys(false).asScala)
             .map { id =>
                 val path = s"$placeholderRoot.$id"

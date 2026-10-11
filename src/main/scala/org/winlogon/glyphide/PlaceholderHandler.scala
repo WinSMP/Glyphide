@@ -3,11 +3,13 @@ package org.winlogon.glyphide
 
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.winlogon.glyphide.hotbar.HotbarPreviewHolder
 
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.{ClickCallback, ClickEvent, HoverEvent}
-import net.kyori.adventure.text.format.{NamedTextColor, TextDecoration}
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 
 import java.time.Duration
 
@@ -25,10 +27,9 @@ trait PlaceholderHandler {
     def replacement(player: Player): Option[Component]
 }
 
-
 object ItemPlaceholderHandler extends PlaceholderHandler {
     val id = "item"
-    val defaultTokens = List("[item]")
+    val defaultTokens = List("[item]", "[i]")
 
     /** The sender's main-hand item with its `SHOW_ITEM` hover. `None` for empty hand. */
     def replacement(player: Player): Option[Component] =
@@ -41,25 +42,27 @@ object HotbarPlaceholderHandler extends PlaceholderHandler {
     val id = "hotbar"
     val defaultTokens = List("[hotbar]")
 
+    private val miniMessage = MiniMessage.miniMessage()
+
     def replacement(player: Player): Option[Component] = {
         val subjectName = player.getName
         // captured here, while the message is being sent, so the button shows the hotbar the
         // sender had at that moment rather than whatever it holds when it is clicked
         val snapshot = HotbarPreviewHolder.capture(player)
 
-        val callback: ClickCallback[Audience] = audience => audience match {
+        val callback: ClickCallback[Audience] = {
             case viewer: Player => viewer.openInventory(new HotbarPreviewHolder(subjectName, snapshot).inventory)
             case _ => ()
         }
 
         Some(
-            Component
-                .text(s"[$subjectName's Hotbar]", NamedTextColor.AQUA, TextDecoration.BOLD)
+            miniMessage.deserialize(
+                    s"<gradient:#cd945f:#dfb289>[<player>'s hotbar]</gradient>",
+                    Placeholder.unparsed("player", subjectName)
+                )
                 .hoverEvent(HoverEvent.showText(Component.text(s"Click to preview $subjectName's hotbar.")))
-                // Adventure defaults to uses=1, so the button would die after a single click.
-                // UNLIMITED_USES makes takeUse() a no-op server-side; the lifetime bounds how long
-                // the entry sits in Paper's callback map, since a chat line is clickable for seconds.
                 .clickEvent(ClickEvent.callback(callback, opts =>
+                    // Allow repeated clicks - the 1-hour lifetime limits how long Paper retains the callback.
                     opts.uses(ClickCallback.UNLIMITED_USES).lifetime(Duration.ofHours(1))
                 ))
         )

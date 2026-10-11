@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-package org.winlogon.glyphide
+package org.winlogon.glyphide.hotbar
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.{NamedTextColor, Style, TextDecoration}
-
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.{Inventory, InventoryHolder, ItemStack}
@@ -30,9 +29,15 @@ final class HotbarPreviewHolder(subjectName: String, snapshot: Array[Option[Item
         Component
             .text(s"$subjectName's Hotbar")
             // inventory titles render italic by default otherwise
-            .style(Style.style().color(NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false).build())
+            .style(
+                Style
+                    .style()
+                    .color(NamedTextColor.DARK_GRAY)
+                    .decoration(TextDecoration.ITALIC, false)
+                    .build()
+            )
 
-    override def getInventory(): Inventory = inventory
+    override def getInventory: Inventory = inventory
 }
 
 object HotbarPreviewHolder {
@@ -40,8 +45,10 @@ object HotbarPreviewHolder {
     /** One hotbar row. */
     val Size = 9
 
-    /** Copies the player's hotbar. Taken when the message is sent, not when the button is clicked,
-      * so rearranging items afterwards does not change what the message shows.
+    /** Copies the player's hotbar.
+      *
+      * Keeps the returned value consistent regardless of whether the player rearranges the items
+      * afterward.
       */
     def capture(player: Player): Array[Option[ItemStack]] =
         Array.tabulate(Size)(slot =>

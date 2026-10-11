@@ -9,8 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
   *
   * `Configuration` snapshots values when it is constructed, so config is only ever read once per
   * reload here; the listener and the command share this instance, which is what makes a reload
-  * apply
-  * to both without either of them reading config themselves.
+  * apply to both without either of them reading config themselves.
   */
 final class SettingsHolder(plugin: JavaPlugin) {
     private val current: AtomicReference[Settings] =
@@ -23,7 +22,7 @@ final class SettingsHolder(plugin: JavaPlugin) {
         plugin.reloadConfig()
         // Bukkit swallows malformed YAML and hands back a blank config, so a broken edit disables
         // everything silently; the placeholder count that PlaceholderRegistry logs is the visible
-        //sign
+        // sign
         current.set(Settings.load(plugin.getConfig, plugin.getLogger))
     }
 }
