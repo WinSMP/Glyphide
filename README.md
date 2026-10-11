@@ -1,6 +1,6 @@
 # Glyphide
 
-Glyphide is a small, focused Minecraft plugin for Paper (and forks such as Folia) that gives you flexible, permission-driven chat formatting — including MiniMessage support, legacy color codes, automatic link highlighting with previews, and LuckPerms integration.
+Glyphide is a small, focused Minecraft plugin for Paper (and forks such as Folia) that gives you flexible, permission-driven chat formatting, including MiniMessage support, legacy color codes, automatic link highlighting with previews, and LuckPerms integration.
 
 > [!TIP]
 > Prefer a quick look? Jump to **Usage** or **Configuration** below.
@@ -32,7 +32,7 @@ Glyphide is a small, focused Minecraft plugin for Paper (and forks such as Folia
 
 ## Quick start
 
-1. Drop the `Glyphide.jar` into your server's `plugins/` folder.
+1. Drop the `Glyphide.jar` file into your server's `plugins/` folder.
 2. Ensure LuckPerms is installed if you want prefix/suffix support.
 3. Start the server (or reload), then edit `plugins/Glyphide/config.yml`.
 4. Reload the plugin:
@@ -65,15 +65,15 @@ placeholder:
 
 ### Key options
 
-| Option                         | Type            | Default / example                     | Notes                                                            |
-| ------------------------------ | --------------- | ------------------------------------- | ---------------------------------------------------------------- |
-| `chat.format`                  | string          | `"$prefix $username > $message"`      | See [Placeholders](#placeholders). MiniMessage and `&` codes work. |
-| `url.color`                    | string          | `"#4430cc"`                           | Hex color of highlighted links.                                  |
-| `url.hover`                    | boolean         | `true`                                | Show the page title on hover (needs the link to be cached).       |
-| `url.description-max-length`   | int             | `15`                                  | Truncation point for the page description in the hover preview.  |
-| `placeholder.<id>.enabled`     | boolean         | `false`                               | Whether that placeholder's tokens are substituted at all.         |
+| Option                         | Type            | Default / example                     | Notes                                                               |
+| ------------------------------ | --------------- | ------------------------------------- | ------------------------------------------------------------------- |
+| `chat.format`                  | string          | `"$prefix $username > $message"`      | See [Placeholders](#placeholders). MiniMessage and `&` codes work.  |
+| `url.color`                    | string          | `"#4430cc"`                           | Hex color of highlighted links.                                     |
+| `url.hover`                    | boolean         | `true`                                | Show the page title on hover (needs the link to be cached).         |
+| `url.description-max-length`   | int             | `15`                                  | Truncation point for the page description in the hover preview.     |
+| `placeholder.<id>.enabled`     | boolean         | `false`                               | Whether that placeholder's tokens are substituted at all.           |
 | `placeholder.<id>.token`       | list of strings | `["[item]"]`                          | Literal strings players type in chat. Omit to use the shipped list. |
-| `use-hypixel-placeholders`     | boolean         | `false`                               | Replaces `o/` and `<3` with emoticons.                            |
+| `use-hypixel-placeholders`     | boolean         | `false`                               | Replaces strings like `o/` and `<3` with better-formatted emoticons.|
 
 > [!IMPORTANT]
 > When editing `config.yml`, make sure spacing and indentation are preserved. YAML is whitespace-sensitive.
@@ -105,8 +105,8 @@ Example format with MiniMessage:
 **Chat token placeholders** are typed by players inside a message and are replaced with rich
 components. Each one is configured under its own `placeholder.<id>` section:
 
-| Placeholder | Meaning                                                                    |
-| ----------- | -------------------------------------------------------------------------- |
+| Placeholder | Meaning                                                                     |
+| ----------- | --------------------------------------------------------------------------- |
 | `item`      | The sender's main-hand item, with a vanilla `SHOW_ITEM` hover.              |
 | `hotbar`    | Reserved for a clickable button that opens the sender's hotbar. Unimplemented — do not enable it yet. |
 
@@ -117,7 +117,7 @@ enabled but an empty hand, `[item]` stays as typed text instead of being blanked
 
 |   Command   |                  What it does                      |                  Permission                    |
 | ----------- | -------------------------------------------------: | ---------------------------------------------- |
-| `/ghreload` | Reloads `config.yml` without restarting the server | `glyphide.admin.reload` (recommended for ops/admins) |
+| `/ghreload` | Reloads `config.yml` without restarting the server | `glyphide.admin.reload`                        |
 
 `glyphide.admin` additionally unlocks MiniMessage formatting in chat messages for that player;
 everyone else gets `&` color codes only.
