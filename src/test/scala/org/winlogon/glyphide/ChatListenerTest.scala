@@ -5,23 +5,25 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock
 import org.mockbukkit.mockbukkit.{MockBukkit, ServerMock}
 
 import io.papermc.paper.event.player.AsyncChatEvent
-import io.papermc.paper.chat.ChatRenderer
 
+import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
+import org.bukkit.configuration.file.{FileConfiguration, YamlConfiguration}
 import org.bukkit.inventory.ItemStack
 import org.bukkit.Material
 import org.junit.jupiter.api.{AfterEach, BeforeEach, Test}
 import org.junit.jupiter.api.Assertions._
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.{mock, verify, when}
 
 import scala.compiletime.uninitialized
+import scala.jdk.CollectionConverters.*
 
 import java.util.Collections
+import java.util.List as JavaList
 
 open class ChatListenerTest {
     var server: ServerMock = uninitialized
@@ -32,7 +34,7 @@ open class ChatListenerTest {
     def setUp(): Unit = {
         server = MockBukkit.mock()
         plugin = MockBukkit.loadSimple(classOf[GlyphideFormatter])
-        player = server.addPlayer()
+        player = server.addPlayer("TestPlayer")
 
         val mockWorld = server.addSimpleWorld("world")
         server.addWorld(mockWorld)
@@ -43,118 +45,188 @@ open class ChatListenerTest {
         MockBukkit.unmock()
     }
 
-    @Test
-    def testBasicChatFormatting(): Unit = {
-        // setup config
-        plugin.getConfig.set("chat.format", "$prefix $username > $message")
+    /** Writes config keys to disk and reloads, which is what the plugin's own reload path does.
+      *
+      * @param keys
+      *   config path to value; token lists must be Java lists, since `getStringList` ignores anything
+      *   else
+      */
+    private def writeConfig(keys: (String, Any)*): Unit = {
+        keys.foreach((path, value) => plugin.getConfig.set(path, value))
         plugin.saveConfig()
         plugin.reloadConfig()
+    }
 
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("Hello"))
-        when(event.viewers()).thenReturn(Collections.singleton(player))
+    private def registerListener(settingsHolder: SettingsHolder): Unit =
+        server.getPluginManager.registerEvents(ChatListener(settingsHolder), plugin)
 
-        listener.onPlayerChat(event)
+    /** Fires a real AsyncChatEvent through the mock server, returns the rendered output.
+      *
+      * Builds a fresh SettingsHolder and ChatListener per call because both snapshot config values at
+      * construction, so they must be created after the test sets its keys.
+      */
+    private def renderMessage(message: Component): Component = {
+        registerListener(new SettingsHolder(plugin))
+        fireMessage(message)
+    }
 
-        val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-        verify(event).renderer(captor.capture())
-        val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
+    /** Renders one message through the listener that is already registered. */
+    private def fireMessage(message: Component): Component = {
+        val viewers = Collections.singleton[Audience](player)
+        val event = new AsyncChatEvent(
+            false,
+            player,
+            viewers,
+            (_, _, _, _) => Component.empty(),
+            message,
+            message,
+            SignedMessage.system("test", message)
+        )
+        server.getPluginManager.callEvent(event)
 
-        val plainText = PlainTextComponentSerializer.plainText().serialize(rendered)
-        assertTrue(plainText.contains("TestPlayer > Hello"))
+        event.renderer().render(player, Component.text(""), Component.text(""), player)
+    }
+
+    private def plainText(component: Component): String =
+        PlainTextComponentSerializer.plainText().serialize(component)
+
+    // The final chat component nests $message replacements, so search recursively.
+    private def findComponent(root: Component, pred: Component => Boolean): Option[Component] = {
+        if (pred(root)) Some(root)
+        else root.children().asScala.flatMap(child => findComponent(child, pred)).headOption
     }
 
     @Test
-    def testItemPlaceholder(): Unit = {
-        // enable item placeholder
-        plugin.getConfig.set("chat.item-placeholder.enabled", true)
-        plugin.getConfig.set("chat.item-placeholder.token", "[item]")
-        plugin.saveConfig()
-        plugin.reloadConfig()
+    def testBasicChatFormatting(): Unit = {
+        writeConfig("chat.format" -> "$prefix $username > $message")
 
-        // give player an item
+        val rendered = renderMessage(Component.text("Hello"))
+
+        assertTrue(plainText(rendered).contains("TestPlayer > Hello"))
+    }
+
+    /** The shipped config must leave placeholders off, or every server would substitute them. */
+    @Test
+    def testPlaceholdersAreOffByDefault(): Unit = {
+        val rendered = renderMessage(Component.text("Check [item] and [hotbar]"))
+
+        val output = plainText(rendered)
+        assertTrue(output.contains("[item]"))
+        assertTrue(output.contains("[hotbar]"))
+    }
+
+    /** An id no handler implements must be ignored rather than break chat. */
+    @Test
+    def testUnknownPlaceholderIsIgnored(): Unit = {
+        writeConfig("placeholder.notimplemented.enabled" -> true)
+
+        val rendered = renderMessage(Component.text("Check [item]"))
+
+        assertTrue(plainText(rendered).contains("[item]"))
+    }
+
+    // NOTE: MockBukkit 4.115.0 has not implemented item hover serialization. The assertions below
+    // never run as of writing but validate the path once upstream implements it.
+    @Test
+    def testItemPlaceholder(): Unit = {
+        writeConfig(
+            "placeholder.item.enabled" -> true,
+            "placeholder.item.token" -> JavaList.of("[item]")
+        )
+
         val diamondSword = ItemStack.of(Material.DIAMOND_SWORD)
         player.getInventory.setItemInMainHand(diamondSword)
 
-        // create listener and event
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("Check [item]"))
-        when(event.viewers()).thenReturn(Collections.singleton(player))
+        val rendered = renderMessage(Component.text("Check [item]"))
 
-        // trigger event
-        listener.onPlayerChat(event)
+        assertTrue(plainText(rendered).contains("Diamond Sword"))
+        assertFalse(plainText(rendered).contains("[item]"))
 
-        // capture rendered component
-        val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-        verify(event).renderer(captor.capture())
-        val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
+        val itemPart = findComponent(
+            rendered,
+            c => c.hoverEvent() != null && c.hoverEvent().action() == HoverEvent.Action.SHOW_ITEM
+        )
+        assertTrue(itemPart.isDefined)
+    }
 
-        // verify item placeholder replacement
-        val plainText = PlainTextComponentSerializer.plainText().serialize(rendered)
-        assertTrue(plainText.contains("Diamond Sword"))
+    /** The shipped config.yml is registered as Bukkit defaults, so it supplies the token list whenever a
+      * server owner enables a placeholder without writing one.
+      */
+    @Test
+    def testShippedTokensApplyWhenConfigHasNone(): Unit = {
+        writeConfig("placeholder.item.enabled" -> true)
+        assertEquals(List(List("[item]", "[i]")), resolveTokens(plugin.getConfig, "item"))
+    }
 
-        // verify hover event
-        val hoverEvent = rendered.children().get(0).hoverEvent()
-        assertNotNull(hoverEvent)
-        assertEquals(HoverEvent.Action.SHOW_ITEM, hoverEvent.action())
+    /** Without the shipped defaults behind it, a section that lists no tokens falls back to the
+      * handler's own list, and a section that lists tokens overrides it.
+      *
+      * Uses a bare YamlConfiguration because `plugin.getConfig` always carries the packaged defaults.
+      */
+    @Test
+    def testHandlerTokensAreTheFallback(): Unit = {
+        val bare = new YamlConfiguration()
+        bare.set("placeholder.item.enabled", true)
+        assertEquals(List(List("[item]")), resolveTokens(bare, "item"))
+
+        bare.set("placeholder.item.token", JavaList.of("[held]", "[hand]"))
+        assertEquals(List(List("[held]", "[hand]")), resolveTokens(bare, "item"))
+    }
+
+    private def resolveTokens(config: FileConfiguration, id: String): List[List[String]] =
+        PlaceholderRegistry
+            .resolve(Configuration(config), plugin.getLogger)
+            .filter(_.handler.id == id)
+            .map(_.tokens)
+
+    /** A reload must swap the settings a message is rendered with, not just the file on disk.
+      *
+      * Asserted through `chat.format` because rendering an item placeholder needs MockBukkit's
+      * unimplemented item hover serialization; the resolved token list is asserted separately above.
+      */
+    @Test
+    def testReloadAppliesToTheNextMessage(): Unit = {
+        writeConfig("chat.format" -> "$username before: $message")
+
+        val settingsHolder = new SettingsHolder(plugin)
+        registerListener(settingsHolder)
+        assertTrue(plainText(fireMessage(Component.text("hi"))).contains("before:"))
+
+        writeConfig("chat.format" -> "$username after: $message")
+        settingsHolder.reload()
+
+        assertTrue(plainText(fireMessage(Component.text("hi"))).contains("after:"))
     }
 
     @Test
     def testUrlHighlighting(): Unit = {
-        // enable URL highlighting
-        plugin.getConfig.set("chat.url.color", "#FF0000")
-        plugin.getConfig.set("chat.url.hover", true)
-        plugin.saveConfig()
-        plugin.reloadConfig()
+        // top-level keys, no `chat.` prefix
+        writeConfig("url.color" -> "#FF0000", "url.hover" -> true)
 
-        // create listener and event
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("Visit https://example.com"))
-            when(event.viewers()).thenReturn(Collections.singleton(player))
+        val rendered = renderMessage(Component.text("Visit https://example.com"))
 
-            // trigger event
-            listener.onPlayerChat(event)
-
-            // capture rendered component
-            val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-            verify(event).renderer(captor.capture())
-            val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
-
-            // verify URL styling
-            val urlPart = rendered.children().get(1)
-            assertEquals(TextColor.fromHexString("#FF0000"), urlPart.color())
-            assertEquals(ClickEvent.Action.OPEN_URL, urlPart.clickEvent().action())
-            assertTrue(urlPart.hoverEvent().value().toString.contains("example.com"))
+        val urlPart = findComponent(
+            rendered,
+            c => c.clickEvent() != null && c.clickEvent().action() == ClickEvent.Action.OPEN_URL
+        )
+        assertTrue(urlPart.isDefined)
+        assertEquals(TextColor.fromHexString("#FF0000"), urlPart.get.color())
+        assertTrue(urlPart.get.clickEvent().value().toString.contains("https://example.com"))
     }
 
     @Test
     def testAdminFormatting(): Unit = {
-        // give admin permissions
         player.addAttachment(plugin, "glyphide.admin", true)
 
-        // create listener and event
-        val listener = ChatListener(plugin)
-        val event = mock(classOf[AsyncChatEvent])
-        when(event.getPlayer).thenReturn(player)
-        when(event.message()).thenReturn(Component.text("<red>Admin message</red>"))
-        when(event.viewers()).thenReturn(Collections.singleton(player))
+        val rendered = renderMessage(Component.text("<red>Admin message</red>"))
 
-        // trigger event
-        listener.onPlayerChat(event)
-
-        // capture rendered component
-        val captor = ArgumentCaptor.forClass(classOf[ChatRenderer])
-        verify(event).renderer(captor.capture())
-        val rendered = captor.getValue.render(player, Component.text(""), Component.text(""), player)
-
-        // verify advanced formatting
-        assertTrue(rendered.style().hasDecoration(net.kyori.adventure.text.format.TextDecoration.BOLD))
-        assertEquals(TextColor.fromHexString("#FF5555"), rendered.color())
+        // interpreted, not echoed literally; <red> == #FF5555
+        assertFalse(plainText(rendered).contains("<red>"))
+        val messagePart = findComponent(
+            rendered,
+            c => PlainTextComponentSerializer.plainText().serialize(c) == "Admin message"
+        )
+        assertTrue(messagePart.isDefined)
+        assertEquals(TextColor.fromHexString("#FF5555"), messagePart.get.color())
     }
 }

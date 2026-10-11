@@ -1,5 +1,5 @@
 name: 'Glyphide'
-version: '0.3.0'
+version: '0.6.0'
 main: 'org.winlogon.glyphide.GlyphideFormatter'
 loader: 'org.winlogon.glyphide.GlyphideLoader'
 description: 'A highly‑customizable chat‑formatting plugin for Paper Minecraft servers, powered by MiniMessage and placeholders for dynamic, colorful in‑game chat.'
@@ -7,7 +7,10 @@ folia-supported: true
 api-version: 1.21
 permissions:
   glyphide.admin:
-    description: 'Ability to reload the configuration, and use MiniMessage formatting'
+    description: 'Use MiniMessage formatting in chat'
+    default: op
+  glyphide.admin.reload:
+    description: 'Reload the configuration with /ghreload'
     default: op
 dependencies:
   server:

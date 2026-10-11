@@ -8,10 +8,21 @@
 
 chat:
   format: "&8[$world] $prefix&r &7| &b$username&r &8➤ &7$message"
-  url:
+url:
     color: "#4430cc"
+    hover: true
     description-max-length: 15
 
-  item-placeholder:
+# Placeholders typed by players in chat, replaced with rich components.
+# Each entry below a placeholder is independent; remove or add sections freely.
+#   enabled: whether the tokens below are substituted at all (default: false)
+#   token: the literal strings players type, replaced by whatever the placeholder shows
+placeholder:
+  item:
     enabled: false
-    token: ["[item]"]
+    token: ["[item]", "[i]"]
+  hotbar:
+    enabled: false
+    token: ["[hotbar]"]
+
+use-hypixel-placeholders: true
