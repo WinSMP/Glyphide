@@ -9,16 +9,15 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
 import org.bukkit.event.{EventHandler, EventPriority, Listener}
-import org.bukkit.plugin.Plugin
 import org.winlogon.glyphide.Formatter.{*, given}
 
-class ChatListener(plugin: Plugin) extends Listener {
+class ChatListener(settingsHolder: SettingsHolder) extends Listener {
     private val miniMessage = MiniMessage.miniMessage()
-    private val formatConfig = Configuration(plugin.getConfig)
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     def onPlayerChat(event: AsyncChatEvent): Unit = {
         val player = event.getPlayer
+        val settings = settingsHolder.settings
 
         val messageString = PlainTextComponentSerializer.plainText().serialize(event.message())
 
@@ -37,21 +36,25 @@ class ChatListener(plugin: Plugin) extends Listener {
             world = player.getWorld.getName
         )
 
-        val rawChatFormat = plugin.getConfig
-            .getString("chat.format", "$prefix $username > $message")
-            .replace("$username", replacements.username)
-            .replace("$world", replacements.world)
-
         val context = ChatContext(
             player = player,
             event = event,
-            config = formatConfig
+            config = settings.config,
+            placeholders = settings.placeholders
         )
+
+        // XXX: $username/$world are substituted before MiniMessage parses. Any tag in them would become "live" tags.
+        //
+        // If both of these values are user-controlled at some point, they should be made
+        // to use Component#replaceText like $prefix does.
+        val rawChatFormat = settings.chatFormat
+            .replace("$username", replacements.username)
+            .replace("$world", replacements.world)
 
         val highlightedMsg = Pipeline(messageString)
             .transform(str => SimpleInfoPlaceholderTransform.transform(str, context))
             .transform(str => MiniMessageFormatTransform.transform(str, context))
-            .transform(comp => ItemPlaceholderTransform.transform(comp, context))
+            .transform(comp => PlaceholderTransform.transform(comp, context))
             .transform(comp => HighlightUrlTransform.transform(comp, context))
             .result
 

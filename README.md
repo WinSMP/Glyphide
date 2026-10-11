@@ -24,6 +24,7 @@ Glyphide is a small, focused Minecraft plugin for Paper (and forks such as Folia
 | Dynamic chat formatting      | Format messages with placeholders for prefix/suffix, username, world and message.  |
 | LuckPerms integration        | Automatically reads player prefixes/suffixes from LuckPerms.                       |
 | MiniMessage & legacy codes   | Use MiniMessage syntax or legacy `§` color codes.                                  |
+| Chat token placeholders      | Turn tokens players type, such as `[item]`, into hoverable or clickable components. |
 | Link highlighting & previews | Detects links, colors them, and shows the page title on hover; URL info is cached. |
 | Configurable                 | Everything in `config.yml`: change formats and permissions without recompiling.    |
 | Admin tools                  | `/ghreload` to reload config at runtime.                                           |
@@ -50,27 +51,42 @@ Place your formatting in `plugins/Glyphide/config.yml`. A common minimal example
 ```yaml
 chat:
   format: "$prefix $username > $message"
-linkPreview:
-  enabled: true
-  cacheDurationSeconds: 3600
+url:
+  color: "#4430cc"
+  hover: true
+  description-max-length: 15
+placeholder:
+  item:
+    enabled: true
+    token: ["[item]", "[i]"]
 ```
 
 </details>
 
 ### Key options
 
-| Option | Type  | Default / example | Notes |
-| ---: | :---: | :--- | --- |
-| `chat.format` | string | `"$prefix $username > $message"` | Use placeholders (see below). Supports MiniMessage and legacy color codes. |
-| `linkPreview.enabled` | boolean | `true` | Toggle fetching page titles for links. |
-| `linkPreview.cacheDurationSeconds` | int | `3600` | How long to cache fetched link metadata. |
+| Option                         | Type            | Default / example                     | Notes                                                            |
+| ------------------------------ | --------------- | ------------------------------------- | ---------------------------------------------------------------- |
+| `chat.format`                  | string          | `"$prefix $username > $message"`      | See [Placeholders](#placeholders). MiniMessage and `&` codes work. |
+| `url.color`                    | string          | `"#4430cc"`                           | Hex color of highlighted links.                                  |
+| `url.hover`                    | boolean         | `true`                                | Show the page title on hover (needs the link to be cached).       |
+| `url.description-max-length`   | int             | `15`                                  | Truncation point for the page description in the hover preview.  |
+| `placeholder.<id>.enabled`     | boolean         | `false`                               | Whether that placeholder's tokens are substituted at all.         |
+| `placeholder.<id>.token`       | list of strings | `["[item]"]`                          | Literal strings players type in chat. Omit to use the shipped list. |
+| `use-hypixel-placeholders`     | boolean         | `false`                               | Replaces `o/` and `<3` with emoticons.                            |
 
 > [!IMPORTANT]
 > When editing `config.yml`, make sure spacing and indentation are preserved. YAML is whitespace-sensitive.
 
+> [!NOTE]
+> Keys you do not recognise are ignored, and any `placeholder.<id>` section Glyphide does not
+> implement is reported in the server log rather than breaking chat.
+
 ## Placeholders
 
-Use these in `chat.format`:
+There are two kinds, and they live in different places.
+
+**Format placeholders** go in `chat.format` and are replaced before the message is parsed:
 
 | Placeholder | Meaning                                     |
 | ----------- | ------------------------------------------- |
@@ -86,11 +102,25 @@ Example format with MiniMessage:
 <gold>$prefix</gold> <white>$username</white>: <italic>$message</italic>
 ```
 
+**Chat token placeholders** are typed by players inside a message and are replaced with rich
+components. Each one is configured under its own `placeholder.<id>` section:
+
+| Placeholder | Meaning                                                                    |
+| ----------- | -------------------------------------------------------------------------- |
+| `item`      | The sender's main-hand item, with a vanilla `SHOW_ITEM` hover.              |
+| `hotbar`    | Reserved for a clickable button that opens the sender's hotbar. Unimplemented — do not enable it yet. |
+
+A token only resolves when the placeholder can produce something for that sender: with `item`
+enabled but an empty hand, `[item]` stays as typed text instead of being blanked out.
+
 ## Commands & Permissions
 
 |   Command   |                  What it does                      |                  Permission                    |
 | ----------- | -------------------------------------------------: | ---------------------------------------------- |
-| `/ghreload` | Reloads `config.yml` without restarting the server | `glyphide.reload` (recommended for ops/admins) |
+| `/ghreload` | Reloads `config.yml` without restarting the server | `glyphide.admin.reload` (recommended for ops/admins) |
+
+`glyphide.admin` additionally unlocks MiniMessage formatting in chat messages for that player;
+everyone else gets `&` color codes only.
 
 You can gate formatting options behind your existing permission setup (LuckPerms or other permission plugins) by checking for specific permission nodes in your config or chat pipeline.
 
@@ -104,15 +134,18 @@ You can gate formatting options behind your existing permission setup (LuckPerms
 
 Glyphide highlights links and fetches the page title to display on hover. To improve performance:
 
-- Keep `linkPreview.cacheDurationSeconds` at a sensible value (default `3600`).
-- If you run into rate limits or want to disable preview fetching, set `linkPreview.enabled: false`.
+- Keep `url.description-max-length` short: only that much of the page description is shown.
+- Turn previews off entirely with `url.hover: false`.
+- Metadata is cached in memory (the last 1000 links); the first sighting of a link has no preview,
+  and it appears from the second message onward.
 
 ## Troubleshooting
 
 > [!NOTE]
 > If chat formatting doesn't appear:
 >
-> * Check that `config.yml` syntax is valid YAML.
+> * Check that `config.yml` syntax is valid YAML. A file that does not parse is loaded as an *empty*
+>   config, so every setting silently falls back to its default.
 > * Ensure LuckPerms is installed and the player has a prefix set (if relying on `$prefix`).
 > * Inspect server logs for plugin errors on startup.
 
