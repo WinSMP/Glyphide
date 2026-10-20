@@ -5,7 +5,7 @@ lazy val buildScalaVersion = "3.7.4"
 lazy val minecraft = "26.1.2.build.+"
 
 ThisBuild / scalaVersion     := buildScalaVersion
-ThisBuild / version          := "0.6.0"
+ThisBuild / version          := "0.6.1"
 ThisBuild / organization     := orgName
 ThisBuild / organizationName := "winlogon"
 Compile / mainClass := Some(mainScalaClass)
@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
     "io.papermc.paper" % "paper-api" % s"$minecraft" % Provided,
     "net.luckperms" % "api" % "5.5" % Provided,
     "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,
-    "org.winlogon" % "retrohue" % "0.2.0" % Provided,
+    "org.winlogon" % "retrohue" % "0.3.0" % Provided,
 
     // testing
     "org.mockbukkit.mockbukkit" % "mockbukkit-v26.1.2" % "4.115.0" % Test,

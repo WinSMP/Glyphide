@@ -105,6 +105,24 @@ open class ChatListenerTest {
         assertTrue(plainText(rendered).contains("TestPlayer > Hello"))
     }
 
+    /** A color change inside an active format code must not leak closing tags into the chat.
+      *
+      * Legacy codes in the chat format are converted to MiniMessage tags; a conversion that
+      * closed the previous color while a format tag was still open produced markup that
+      * MiniMessage renders as literal text, so players saw stray tags in their chat.
+      */
+    @Test
+    def testLegacyCodesDoNotLeakClosingTags(): Unit = {
+        writeConfig("chat.format" -> "&8[&3&nOwner&8]&r $username > $message")
+
+        val rendered = renderMessage(Component.text("Hello"))
+
+        val output = plainText(rendered)
+        assertFalse(output.contains("</"))
+        assertTrue(output.contains("Owner"))
+        assertTrue(output.contains("TestPlayer > Hello"))
+    }
+
     /** The shipped config must leave placeholders off, or every server would substitute them. */
     @Test
     def testPlaceholdersAreOffByDefault(): Unit = {
@@ -167,7 +185,7 @@ open class ChatListenerTest {
     def testHandlerTokensAreTheFallback(): Unit = {
         val bare = new YamlConfiguration()
         bare.set("placeholder.item.enabled", true)
-        assertEquals(List(List("[item]")), resolveTokens(bare, "item"))
+        assertEquals(List(List("[item]", "[i]")), resolveTokens(bare, "item"))
 
         bare.set("placeholder.item.token", JavaList.of("[held]", "[hand]"))
         assertEquals(List(List("[held]", "[hand]")), resolveTokens(bare, "item"))

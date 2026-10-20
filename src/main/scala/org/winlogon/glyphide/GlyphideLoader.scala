@@ -35,7 +35,7 @@ class GlyphideLoader extends PluginLoader {
 
         val dependencies = JavaList.of(
             dependency("org.unbescape:unbescape:1.1.6.RELEASE"),
-            dependency("org.winlogon:retrohue:0.1.0"),
+            dependency("org.winlogon:retrohue:0.3.0"),
             dependency("org.scala-lang:scala3-library_3:".concat(scala))
         )
 

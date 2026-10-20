@@ -5,6 +5,8 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock
 import org.mockbukkit.mockbukkit.inventory.InventoryViewMock
 import org.mockbukkit.mockbukkit.{MockBukkit, ServerMock}
 
+import org.winlogon.glyphide.hotbar.{HotbarPreviewHolder, InventoryGuard}
+
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.HumanEntity
