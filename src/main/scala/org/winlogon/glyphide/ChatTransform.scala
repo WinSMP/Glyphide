@@ -4,6 +4,8 @@ import org.bukkit.entity.Player
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import io.papermc.paper.event.player.AsyncChatEvent
 import org.bukkit.Material
@@ -111,15 +113,18 @@ object PlaceholderTransform extends ChatTransform[Component, Component] {
 }
 
 
-object SimpleInfoPlaceholderTransform extends ChatTransform[String, String] {
-    def transform(input: String, context: ChatContext): String = {
+object SimpleInfoPlaceholderTransform extends ChatTransform[Component, Component] {
+    private val miniMessage = MiniMessage.miniMessage()
+
+    def transform(input: Component, context: ChatContext): Component = {
         if (!context.config.useHypixelPlaceholders) {
             return input
         }
 
         context.config.hypixelPlaceholders.foldLeft(input) {
-            case (acc, (placeholder, replacement)) =>
-                acc.replace(placeholder, replacement)
+            case (component, (token, markup)) =>
+                val replacement = miniMessage.deserialize(markup, TagResolver.standard())
+                component.replaceText(builder => builder.matchLiteral(token).replacement(replacement))
         }
     }
 }

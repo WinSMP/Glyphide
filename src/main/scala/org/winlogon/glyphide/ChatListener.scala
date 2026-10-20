@@ -52,8 +52,8 @@ class ChatListener(settingsHolder: SettingsHolder) extends Listener {
             .replace("$world", replacements.world)
 
         val highlightedMsg = Pipeline(messageString)
-            .transform(str => SimpleInfoPlaceholderTransform.transform(str, context))
             .transform(str => MiniMessageFormatTransform.transform(str, context))
+            .transform(comp => SimpleInfoPlaceholderTransform.transform(comp, context))
             .transform(comp => PlaceholderTransform.transform(comp, context))
             .transform(comp => HighlightUrlTransform.transform(comp, context))
             .result

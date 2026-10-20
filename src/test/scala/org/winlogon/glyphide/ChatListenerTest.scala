@@ -10,7 +10,7 @@ import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.{ClickEvent, HoverEvent}
-import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.{NamedTextColor, TextColor}
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
 import org.bukkit.configuration.file.{FileConfiguration, YamlConfiguration}
@@ -121,6 +121,43 @@ open class ChatListenerTest {
         assertFalse(output.contains("</"))
         assertTrue(output.contains("Owner"))
         assertTrue(output.contains("TestPlayer > Hello"))
+    }
+
+    /** The plugin's own emoticon markup must render for every player.
+      *
+      * Players who may not use MiniMessage themselves still get the plugin's placeholders
+      * rendered, because that markup is plugin-controlled rather than player-controlled.
+      */
+    @Test
+    def testHypixelPlaceholderRendersForNonAdmin(): Unit = {
+        writeConfig("use-hypixel-placeholders" -> true)
+
+        val rendered = renderMessage(Component.text("i love rust btw <3"))
+
+        val output = plainText(rendered)
+        assertTrue(output.contains("❤"))
+        assertFalse(output.contains("<red>"))
+
+        val heart = findComponent(rendered, c => plainText(c) == "❤")
+        assertTrue(heart.isDefined)
+        assertEquals(NamedTextColor.RED, heart.get.color())
+    }
+
+    /** The same placeholder must render for a player who may use MiniMessage themselves. */
+    @Test
+    def testHypixelPlaceholderRendersForAdmin(): Unit = {
+        writeConfig("use-hypixel-placeholders" -> true)
+        player.addAttachment(plugin, "glyphide.admin", true)
+
+        val rendered = renderMessage(Component.text("i love rust btw <3"))
+
+        val output = plainText(rendered)
+        assertTrue(output.contains("❤"))
+        assertFalse(output.contains("<red>"))
+
+        val heart = findComponent(rendered, c => plainText(c) == "❤")
+        assertTrue(heart.isDefined)
+        assertEquals(NamedTextColor.RED, heart.get.color())
     }
 
     /** The shipped config must leave placeholders off, or every server would substitute them. */
