@@ -66,13 +66,13 @@ class Configuration(config: FileConfiguration) {
         ":totem:" -> "<aqua>☉</aqua><yellow>_</yellow><aqua>☉</aqua>",
         ":typing:" -> "<yellow>✎...</yellow>",
         ":maths:" -> ("<b><green>√</green>" +
-            " <yellow>(</yellow>" +
-            " <green>π</green>" +
-            " <yellow>+</yellow>" +
-            " <green>x</green>" +
-            " <yellow>)</yellow>" +
-            " <green>=</green>" +
-            " <red>L</red></b>"),
+            "<yellow>(</yellow>" +
+            "<green>π</green>" +
+            "<yellow>+</yellow>" +
+            "<green>x</green>" +
+            "<yellow>)</yellow>" +
+            "<green>=</green>" +
+            "<red>L</red></b>"),
         ":snail:" -> "<yellow>@</yellow><green>'</green><yellow>-</yellow><green>'</green>",
         ":thinking:" -> "<gold>(</gold><green>0</green><gold>.</gold><green>o</green><gold>?)</gold>",
         ":gimme:" -> "<blue>༼つ◕_◕༽つ</blue>",
