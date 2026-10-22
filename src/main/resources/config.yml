@@ -26,3 +26,4 @@ placeholder:
     token: ["[hotbar]"]
 
 use-hypixel-placeholders: true
+use-emoji-shortcodes: false

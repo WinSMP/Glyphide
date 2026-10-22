@@ -29,6 +29,7 @@ assembly / assemblyMergeStrategy := {
 assembly / mainClass := Some(mainScalaClass)
 
 libraryDependencies ++= Seq(
+    "com.vdurmont" % "emoji-java" % "5.1.1",
     "io.papermc.paper" % "paper-api" % s"$minecraft" % Provided,
     "net.luckperms" % "api" % "5.5" % Provided,
     "org.unbescape" % "unbescape" % "1.1.6.RELEASE" % Provided,

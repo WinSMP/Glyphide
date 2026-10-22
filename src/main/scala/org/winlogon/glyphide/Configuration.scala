@@ -30,6 +30,7 @@ class Configuration(config: FileConfiguration) {
     val addHover: Boolean = config.getBoolean("url.hover", true)
     val descLength: Int = config.getInt("url.description-max-length", 15)
     val useHypixelPlaceholders: Boolean = config.getBoolean("use-hypixel-placeholders", false)
+    val useEmojiShortcodes: Boolean = config.getBoolean("use-emoji-shortcodes", false)
 
     /** The `placeholder.<id>` sections, keyed by id.
       *

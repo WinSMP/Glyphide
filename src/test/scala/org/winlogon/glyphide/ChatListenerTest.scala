@@ -48,8 +48,8 @@ open class ChatListenerTest {
     /** Writes config keys to disk and reloads, which is what the plugin's own reload path does.
       *
       * @param keys
-      *   config path to value; token lists must be Java lists, since `getStringList` ignores anything
-      *   else
+      *   config path to value; token lists must be Java lists, since `getStringList` ignores
+      *   anything else
       */
     private def writeConfig(keys: (String, Any)*): Unit = {
         keys.foreach((path, value) => plugin.getConfig.set(path, value))
@@ -62,8 +62,8 @@ open class ChatListenerTest {
 
     /** Fires a real AsyncChatEvent through the mock server, returns the rendered output.
       *
-      * Builds a fresh SettingsHolder and ChatListener per call because both snapshot config values at
-      * construction, so they must be created after the test sets its keys.
+      * Builds a fresh SettingsHolder and ChatListener per call because both snapshot config values
+      * at construction, so they must be created after the test sets its keys.
       */
     private def renderMessage(message: Component): Component = {
         registerListener(new SettingsHolder(plugin))
@@ -107,9 +107,9 @@ open class ChatListenerTest {
 
     /** A color change inside an active format code must not leak closing tags into the chat.
       *
-      * Legacy codes in the chat format are converted to MiniMessage tags; a conversion that
-      * closed the previous color while a format tag was still open produced markup that
-      * MiniMessage renders as literal text, so players saw stray tags in their chat.
+      * Legacy codes in the chat format are converted to MiniMessage tags; a conversion that closed
+      * the previous color while a format tag was still open produced markup that MiniMessage
+      * renders as literal text, so players saw stray tags in their chat.
       */
     @Test
     def testLegacyCodesDoNotLeakClosingTags(): Unit = {
@@ -125,8 +125,8 @@ open class ChatListenerTest {
 
     /** The plugin's own emoticon markup must render for every player.
       *
-      * Players who may not use MiniMessage themselves still get the plugin's placeholders
-      * rendered, because that markup is plugin-controlled rather than player-controlled.
+      * Players who may not use MiniMessage themselves still get the plugin's placeholders rendered,
+      * because that markup is plugin-controlled rather than player-controlled.
       */
     @Test
     def testHypixelPlaceholderRendersForNonAdmin(): Unit = {
@@ -144,6 +144,26 @@ open class ChatListenerTest {
     }
 
     /** The same placeholder must render for a player who may use MiniMessage themselves. */
+    @Test
+    def testEmojiShortcodeReplacesSob(): Unit = {
+        writeConfig("use-emoji-shortcodes" -> true)
+        val rendered = renderMessage(Component.text("not the vibe-coding class :sob:"))
+        val output = plainText(rendered)
+        assertTrue(output.contains("😭"), s"Expected \uD83D\uDE2D in '$output'")
+        assertFalse(output.contains(":sob:"))
+    }
+
+    @Test
+    def testEmojiShortcodeLeavesUnknownLiteral(): Unit = {
+        writeConfig("use-emoji-shortcodes" -> true)
+        val rendered = renderMessage(Component.text("unknown :notreal: here"))
+        val output = plainText(rendered)
+        assertTrue(
+            output.contains(":notreal:"),
+            s"Unknown shortcode must stay literal in '$output'"
+        )
+    }
+
     @Test
     def testHypixelPlaceholderRendersForAdmin(): Unit = {
         writeConfig("use-hypixel-placeholders" -> true)
@@ -204,8 +224,8 @@ open class ChatListenerTest {
         assertTrue(itemPart.isDefined)
     }
 
-    /** The shipped config.yml is registered as Bukkit defaults, so it supplies the token list whenever a
-      * server owner enables a placeholder without writing one.
+    /** The shipped config.yml is registered as Bukkit defaults, so it supplies the token list
+      * whenever a server owner enables a placeholder without writing one.
       */
     @Test
     def testShippedTokensApplyWhenConfigHasNone(): Unit = {
@@ -216,7 +236,8 @@ open class ChatListenerTest {
     /** Without the shipped defaults behind it, a section that lists no tokens falls back to the
       * handler's own list, and a section that lists tokens overrides it.
       *
-      * Uses a bare YamlConfiguration because `plugin.getConfig` always carries the packaged defaults.
+      * Uses a bare YamlConfiguration because `plugin.getConfig` always carries the packaged
+      * defaults.
       */
     @Test
     def testHandlerTokensAreTheFallback(): Unit = {
@@ -237,7 +258,8 @@ open class ChatListenerTest {
     /** A reload must swap the settings a message is rendered with, not just the file on disk.
       *
       * Asserted through `chat.format` because rendering an item placeholder needs MockBukkit's
-      * unimplemented item hover serialization; the resolved token list is asserted separately above.
+      * unimplemented item hover serialization; the resolved token list is asserted separately
+      * above.
       */
     @Test
     def testReloadAppliesToTheNextMessage(): Unit = {

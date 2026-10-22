@@ -11,6 +11,7 @@ import io.papermc.paper.event.player.AsyncChatEvent
 import org.bukkit.Material
 
 import java.util.regex.Pattern
+import com.vdurmont.emoji.EmojiParser
 
 private val URL_PATTERN: Pattern = Pattern.compile("https?://\\S+")
 
@@ -112,6 +113,21 @@ object PlaceholderTransform extends ChatTransform[Component, Component] {
         }
 }
 
+
+object EmojiTransform extends ChatTransform[Component, Component] {
+    private val SHORTCODE_PATTERN: Pattern = Pattern.compile(":([a-zA-Z0-9_+-]+):")
+
+    def transform(input: Component, context: ChatContext): Component = {
+        if (!context.config.useEmojiShortcodes) input
+        else input.replaceText { config =>
+            config.`match`(SHORTCODE_PATTERN).replacement { (mr, _) =>
+                val alias = ":" + mr.group(1) + ":"
+                val replaced = EmojiParser.parseToUnicode(alias)
+                Component.text(if (replaced == alias) mr.group() else replaced)
+            }
+        }
+    }
+}
 
 object SimpleInfoPlaceholderTransform extends ChatTransform[Component, Component] {
     private val miniMessage = MiniMessage.miniMessage()
