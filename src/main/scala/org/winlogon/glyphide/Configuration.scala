@@ -53,6 +53,32 @@ class Configuration(config: FileConfiguration) {
 
     val hypixelPlaceholders = Map(
         "o/" -> "<light_purple>( ﾟ◡ﾟ)/</light_purple>",
-        "<3" -> "<red>❤</red>"
+        "<3" -> "<red>❤</red>",
+        ":star:" -> "<gold>✮</gold>",
+        ":yes:" -> "<green>✔</green>",
+        ":no:" -> "<red>✖</red>",
+        ":java:" -> "<aqua>☕</aqua>",
+        ":arrow:" -> "<yellow>➜</yellow>",
+        ":shrug:" -> "<yellow>¯\\_(ツ)_/¯</yellow>",
+        ":tableflip:" -> "<red>(╯°□°）╯</red><white>︵ ┻━┻</white>",
+        ":123:" -> "<green>1</green><yellow> 2 </yellow><red>3</red>",
+        ":totem:" -> "<aqua>☉</aqua><yellow>_</yellow><aqua>☉</aqua>",
+        ":typing:" -> "<yellow>✎...</yellow>",
+        ":maths:" -> ("<b><green>√</green>" +
+            " <yellow>(</yellow>" +
+            " <green>π</green>" +
+            " <yellow>+</yellow>" +
+            " <green>x</green>" +
+            " <yellow>)</yellow>" +
+            " <green>=</green>" +
+            " <red>L</red></b>"),
+        ":snail:" -> "<yellow>@</yellow><green>'</green><yellow>-</yellow><green>'</green>",
+        ":thinking:" -> "<gold>(</gold><green>0</green><gold>.</gold><green>o</green><gold>?)</gold>",
+        ":gimme:" -> "<blue>༼つ◕_◕༽つ</blue>",
+        ":wizard:" -> "<yellow>('</yellow><aqua>-</aqua><yellow>')</yellow><red>⊃</red><light_purple>━</light_purple><red>☆</red><light_purple>.*</light_purple><red>･</red><light_purple>｡</light_purple><red>ﾟ</red>",
+        ":pvp:" -> "<yellow>⚔</yellow>",
+        ":peace:" -> "<green>✌</green>",
+        ":oof:" -> "<red><bold>OOF</bold></red>",
+        ":puffer:" -> "<yellow><('O')></yellow>"
     )
 }
